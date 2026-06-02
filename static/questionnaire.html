@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MMMatch — Questionnaire</title>
+  <meta name="description" content="Complete your mentorship profile questionnaire." />
+  <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body class="dashboard-page">
+
+<header>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <img src="/static/img/logo.png" alt="MMMatch" width="60" height="60" />
+        MMMatch
+      </a>
+    </div>
+  </nav>
+</header>
+
+<div class="dashboard-wrapper">
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+      <ul class="sidebar-menu">
+        <li class="sidebar-item">
+          <a href="#" class="sidebar-link">
+            <img src="/static/img/calendar.png" alt="Results" class="sidebar-icon" />
+            <span>Results of matchmaking</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="#" class="sidebar-link">
+            <img src="/static/img/group.png" alt="Matches" class="sidebar-icon" />
+            <span>Previous matches</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="/questionnaire" class="sidebar-link active">
+            <img src="/static/img/questionnaire.png" alt="Questionnaire" class="sidebar-icon" />
+            <span>Questionnaire</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="#" class="sidebar-link">
+            <img src="/static/img/cogwheel.png" alt="Settings" class="sidebar-icon" />
+            <span>Settings</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <div class="settings-container">
+      <h1 class="settings-title">Questionnaire</h1>
+      
+      <div class="settings-card questionnaire-card">
+        <form class="settings-form">
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="papers-read">How many papers do you plan to read?</label>
+              <select id="papers-read">
+                <option value="">Select number of papers</option>
+                <option value="1-5">1-5 papers</option>
+                <option value="5-10">5-10 papers</option>
+                <option value="10-20">10-20 papers</option>
+                <option value="20+">20+ papers</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="lit-review">How confident are you with literature review?</label>
+              <select id="lit-review">
+                <option value="">Select confidence level</option>
+                <option value="1">Very low (1/5)</option>
+                <option value="2">Low (2/5)</option>
+                <option value="3">Medium (3/5)</option>
+                <option value="4">High (4/5)</option>
+                <option value="5">Very high (5/5)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="meeting-frequency">How often can you meet with your mentor?</label>
+              <select id="meeting-frequency">
+                <option value="">Select meeting frequency</option>
+                <option value="weekly">Weekly</option>
+                <option value="biweekly">Bi-weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="as-needed">As needed</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="communication">How would you rate your communication abilities?</label>
+              <select id="communication">
+                <option value="">Select communication level</option>
+                <option value="1">Beginner (1/5)</option>
+                <option value="2">Elementary (2/5)</option>
+                <option value="3">Intermediate (3/5)</option>
+                <option value="4">Advanced (4/5)</option>
+                <option value="5">Expert (5/5)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="research-tools">How skilled are you with research tools?</label>
+              <select id="research-tools">
+                <option value="">Select skill level</option>
+                <option value="1">No experience (1/5)</option>
+                <option value="2">Basic knowledge (2/5)</option>
+                <option value="3">Intermediate (3/5)</option>
+                <option value="4">Advanced (4/5)</option>
+                <option value="5">Expert (5/5)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="deadline-management">How would you rate your deadline management skills?</label>
+              <select id="deadline-management">
+                <option value="">Select deadline management level</option>
+                <option value="1">Very poor (1/5)</option>
+                <option value="2">Poor (2/5)</option>
+                <option value="3">Average (3/5)</option>
+                <option value="4">Good (4/5)</option>
+                <option value="5">Excellent (5/5)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="domain-knowledge">How would you rate your domain knowledge?</label>
+              <select id="domain-knowledge">
+                <option value="">Select knowledge level</option>
+                <option value="1">Beginner (1/5)</option>
+                <option value="2">Elementary (2/5)</option>
+                <option value="3">Intermediate (3/5)</option>
+                <option value="4">Advanced (4/5)</option>
+                <option value="5">Expert (5/5)</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="margin-top: var(--space-xl); width: 100%;">Submit Questionnaire</button>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <img src="/static/img/full_icon.png" alt="Mentee & Mentor Match" />
+    </div>
+
+    <div class="footer-info">
+      <div class="footer-info-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span>X street, city Zaporizhzhia, Ukraine</span>
+      </div>
+      <div class="footer-info-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <a href="mailto:vyshnevetskiyvolodymyr@gmail.com">vyshnevetskiyvolodymyr@gmail.com</a>
+      </div>
+      <div class="footer-info-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.68h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <span>+38 (093) 0083771/571</span>
+      </div>
+    </div>
+
+    <div class="footer-social">
+      <a href="#" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+      </a>
+      <a href="#" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4V9h4v2a6 6 0 0 1 2-3z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <span>©2026 MMMatch All rights reserved.</span>
+    <div class="footer-links">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of use</a>
+      <a href="#">Sitemap</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

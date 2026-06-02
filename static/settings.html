@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MMMatch — Settings</title>
+  <meta name="description" content="Manage your MMMatch account settings." />
+  <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body class="dashboard-page">
+
+<header>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <img src="/static/img/logo.png" alt="MMMatch" width="60" height="60" />
+        MMMatch
+      </a>
+    </div>
+  </nav>
+</header>
+
+<div class="dashboard-wrapper">
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+      <ul class="sidebar-menu">
+        <li class="sidebar-item">
+          <a href="#" class="sidebar-link">
+            <img src="/static/img/calendar.png" alt="Results" class="sidebar-icon" />
+            <span>Results of matchmaking</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="#" class="sidebar-link">
+            <img src="/static/img/group.png" alt="Matches" class="sidebar-icon" />
+            <span>Previous matches</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="#" class="sidebar-link">
+            <img src="/static/img/questionnaire.png" alt="Questionnaire" class="sidebar-icon" />
+            <span>Questionnaire</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="/settings" class="sidebar-link active settings-link">
+            <img src="/static/img/cogwheel.png" alt="Settings" class="sidebar-icon" />
+            <span>Settings</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <div class="settings-container">
+      <h1 class="settings-title">Settings</h1>
+      
+      <div class="settings-card">
+        <div class="settings-profile">
+          <img src="/static/img/avatar.png" alt="Profile" class="profile-avatar" />
+        </div>
+        
+        <form class="settings-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" placeholder="Your Name" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email">Email</label>
+              <div class="form-group-with-btn">
+                <input type="email" id="email" placeholder="Your Email" />
+                <button type="button" class="btn btn-secondary">Change</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" id="password" placeholder="Password" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="native-lang">Native language</label>
+              <select id="native-lang">
+                <option value="">Select native language</option>
+                <option value="en">English</option>
+                <option value="uk">Ukrainian</option>
+                <option value="ru">Russian</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="interface-lang">Interface language</label>
+              <select id="interface-lang">
+                <option value="">Select interface language</option>
+                <option value="en">English</option>
+                <option value="uk">Ukrainian</option>
+                <option value="ru">Russian</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <img src="/static/img/full_icon.png" alt="Mentee & Mentor Match" />
+
+    </div>
+
+    <div class="footer-info">
+      <div class="footer-info-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span>X street, city Zaporizhzhia, Ukraine</span>
+      </div>
+      <div class="footer-info-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <a href="mailto:vyshnevetskiyvolodymyr@gmail.com">vyshnevetskiyvolodymyr@gmail.com</a>
+      </div>
+      <div class="footer-info-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.68h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <span>+38 (093) 0083771/571</span>
+      </div>
+    </div>
+
+    <div class="footer-social">
+      <a href="#" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+      </a>
+      <a href="#" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4V9h4v2a6 6 0 0 1 2-3z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <span>©2026 MMMatch All rights reserved.</span>
+    <div class="footer-links">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of use</a>
+      <a href="#">Sitemap</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Role selection toggle
+  const roleButtons = document.querySelectorAll('.role-btn');
+  roleButtons.forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      roleButtons.forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+    });
+  });
+
+  // Form submission
+  const form = document.getElementById('registration-form');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    // Add your form submission logic here
+    console.log('Form submitted');
+  });
+
+  // FAQ accordion functionality
+  document.querySelectorAll(".faq-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const item   = btn.closest(".faq-item");
+      const isOpen = item.classList.contains("open");
+      document.querySelectorAll(".faq-item").forEach(i => {
+        i.classList.remove("open");
+        i.querySelector(".faq-btn").setAttribute("aria-expanded", "false");
+      });
+      if (!isOpen) {
+        item.classList.add("open");
+        btn.setAttribute("aria-expanded", "true");
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
