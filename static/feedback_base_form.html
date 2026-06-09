@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MMMatch — Questionnaire</title>
+  <meta name="description" content="Complete your mentorship profile questionnaire." />
+  <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body class="dashboard-page">
+
+<header>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <img src="/static/img/logo.png" alt="MMMatch" width="60" height="60" />
+        MMMatch
+      </a>
+    </div>
+  </nav>
+</header>
+
+<div class="dashboard-wrapper">
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+      <ul class="sidebar-menu">
+        <li class="sidebar-item">
+          <a href="#" class="sidebar-link">
+            <img src="/static/img/calendar.png" alt="Results" class="sidebar-icon" />
+            <span>Results of matchmaking</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="#" class="sidebar-link">
+            <img src="/static/img/group.png" alt="Matches" class="sidebar-icon" />
+            <span>Previous matches</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="/questionnaire" class="sidebar-link active">
+            <img src="/static/img/questionnaire.png" alt="Questionnaire" class="sidebar-icon" />
+            <span>Questionnaire</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a href="#" class="sidebar-link">
+            <img src="/static/img/cogwheel.png" alt="Settings" class="sidebar-icon" />
+            <span>Settings</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <div class="settings-container">
+      <h1 class="settings-title">Group Feedback Form</h1>
+      
+      <div class="settings-card questionnaire-card">
+        <form class="settings-form">
+          
+          <!-- COMPATIBILITY SECTION -->
+          <div class="form-section">
+            <h2 class="form-section-title">Compatibility</h2>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="compatibility-1">I was able to communicate openly and share my ideas with the group without facing interpersonal or structural barriers.</label>
+                <div class="rating-scale">
+                  <input type="radio" name="compatibility-1" id="compatibility-1-1" value="1" required />
+                  <label for="compatibility-1-1">1</label>
+                  <input type="radio" name="compatibility-1" id="compatibility-1-2" value="2" />
+                  <label for="compatibility-1-2">2</label>
+                  <input type="radio" name="compatibility-1" id="compatibility-1-3" value="3" />
+                  <label for="compatibility-1-3">3</label>
+                  <input type="radio" name="compatibility-1" id="compatibility-1-4" value="4" />
+                  <label for="compatibility-1-4">4</label>
+                  <input type="radio" name="compatibility-1" id="compatibility-1-5" value="5" />
+                  <label for="compatibility-1-5">5</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="compatibility-2">I felt confident relying on my group members and trusted them with their portions of the research.</label>
+                <div class="rating-scale">
+                  <input type="radio" name="compatibility-2" id="compatibility-2-1" value="1" required />
+                  <label for="compatibility-2-1">1</label>
+                  <input type="radio" name="compatibility-2" id="compatibility-2-2" value="2" />
+                  <label for="compatibility-2-2">2</label>
+                  <input type="radio" name="compatibility-2" id="compatibility-2-3" value="3" />
+                  <label for="compatibility-2-3">3</label>
+                  <input type="radio" name="compatibility-2" id="compatibility-2-4" value="4" />
+                  <label for="compatibility-2-4">4</label>
+                  <input type="radio" name="compatibility-2" id="compatibility-2-5" value="5" />
+                  <label for="compatibility-2-5">5</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="compatibility-3">Disagreements within the group were rare, and when they did occur, they were handled respectfully and constructively.</label>
+                <div class="rating-scale">
+                  <input type="radio" name="compatibility-3" id="compatibility-3-1" value="1" required />
+                  <label for="compatibility-3-1">1</label>
+                  <input type="radio" name="compatibility-3" id="compatibility-3-2" value="2" />
+                  <label for="compatibility-3-2">2</label>
+                  <input type="radio" name="compatibility-3" id="compatibility-3-3" value="3" />
+                  <label for="compatibility-3-3">3</label>
+                  <input type="radio" name="compatibility-3" id="compatibility-3-4" value="4" />
+                  <label for="compatibility-3-4">4</label>
+                  <input type="radio" name="compatibility-3" id="compatibility-3-5" value="5" />
+                  <label for="compatibility-3-5">5</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RESPONSIVENESS SECTION -->
+          <div class="form-section">
+            <h2 class="form-section-title">Responsiveness</h2>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="responsiveness-1">Group members consistently responded to my messages, questions, and emails in a prompt manner.</label>
+                <div class="rating-scale">
+                  <input type="radio" name="responsiveness-1" id="responsiveness-1-1" value="1" required />
+                  <label for="responsiveness-1-1">1</label>
+                  <input type="radio" name="responsiveness-1" id="responsiveness-1-2" value="2" />
+                  <label for="responsiveness-1-2">2</label>
+                  <input type="radio" name="responsiveness-1" id="responsiveness-1-3" value="3" />
+                  <label for="responsiveness-1-3">3</label>
+                  <input type="radio" name="responsiveness-1" id="responsiveness-1-4" value="4" />
+                  <label for="responsiveness-1-4">4</label>
+                  <input type="radio" name="responsiveness-1" id="responsiveness-1-5" value="5" />
+                  <label for="responsiveness-1-5">5</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="responsiveness-2">Members completed their assigned tasks on time and did not cause unnecessary delays to the research schedule.</label>
+                <div class="rating-scale">
+                  <input type="radio" name="responsiveness-2" id="responsiveness-2-1" value="1" required />
+                  <label for="responsiveness-2-1">1</label>
+                  <input type="radio" name="responsiveness-2" id="responsiveness-2-2" value="2" />
+                  <label for="responsiveness-2-2">2</label>
+                  <input type="radio" name="responsiveness-2" id="responsiveness-2-3" value="3" />
+                  <label for="responsiveness-2-3">3</label>
+                  <input type="radio" name="responsiveness-2" id="responsiveness-2-4" value="4" />
+                  <label for="responsiveness-2-4">4</label>
+                  <input type="radio" name="responsiveness-2" id="responsiveness-2-5" value="5" />
+                  <label for="responsiveness-2-5">5</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="responsiveness-3">Whenever I needed input or assistance to move forward, my group members were readily available to help.</label>
+                <div class="rating-scale">
+                  <input type="radio" name="responsiveness-3" id="responsiveness-3-1" value="1" required />
+                  <label for="responsiveness-3-1">1</label>
+                  <input type="radio" name="responsiveness-3" id="responsiveness-3-2" value="2" />
+                  <label for="responsiveness-3-2">2</label>
+                  <input type="radio" name="responsiveness-3" id="responsiveness-3-3" value="3" />
+                  <label for="responsiveness-3-3">3</label>
+                  <input type="radio" name="responsiveness-3" id="responsiveness-3-4" value="4" />
+                  <label for="responsiveness-3-4">4</label>
+                  <input type="radio" name="responsiveness-3" id="responsiveness-3-5" value="5" />
+                  <label for="responsiveness-3-5">5</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RELATIONSHIP QUALITY SECTION -->
+          <div class="form-section">
+            <h2 class="form-section-title">Relationship Quality</h2>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="relationship-1">I was able to communicate openly and share my ideas with the group without facing interpersonal or structural barriers.</label>
+                <div class="rating-scale">
+                  <input type="radio" name="relationship-1" id="relationship-1-1" value="1" required />
+                  <label for="relationship-1-1">1</label>
+                  <input type="radio" name="relationship-1" id="relationship-1-2" value="2" />
+                  <label for="relationship-1-2">2</label>
+                  <input type="radio" name="relationship-1" id="relationship-1-3" value="3" />
+                  <label for="relationship-1-3">3</label>
+                  <input type="radio" name="relationship-1" id="relationship-1-4" value="4" />
+                  <label for="relationship-1-4">4</label>
+                  <input type="radio" name="relationship-1" id="relationship-1-5" value="5" />
+                  <label for="relationship-1-5">5</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="relationship-2">I felt confident relying on my group members and trusted them with their portions of the research.</label>
+                <div class="rating-scale">
+                  <input type="radio" name="relationship-2" id="relationship-2-1" value="1" required />
+                  <label for="relationship-2-1">1</label>
+                  <input type="radio" name="relationship-2" id="relationship-2-2" value="2" />
+                  <label for="relationship-2-2">2</label>
+                  <input type="radio" name="relationship-2" id="relationship-2-3" value="3" />
+                  <label for="relationship-2-3">3</label>
+                  <input type="radio" name="relationship-2" id="relationship-2-4" value="4" />
+                  <label for="relationship-2-4">4</label>
+                  <input type="radio" name="relationship-2" id="relationship-2-5" value="5" />
+                  <label for="relationship-2-5">5</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="relationship-3">Disagreements within the group were rare, and when they did occur, they were handled respectfully and constructively.</label>
+                <div class="rating-scale">
+                  <input type="radio" name="relationship-3" id="relationship-3-1" value="1" required />
+                  <label for="relationship-3-1">1</label>
+                  <input type="radio" name="relationship-3" id="relationship-3-2" value="2" />
+                  <label for="relationship-3-2">2</label>
+                  <input type="radio" name="relationship-3" id="relationship-3-3" value="3" />
+                  <label for="relationship-3-3">3</label>
+                  <input type="radio" name="relationship-3" id="relationship-3-4" value="4" />
+                  <label for="relationship-3-4">4</label>
+                  <input type="radio" name="relationship-3" id="relationship-3-5" value="5" />
+                  <label for="relationship-3-5">5</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="margin-top: var(--space-xl); width: 100%;">Submit Feedback</button>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <img src="/static/img/full_icon.png" alt="Mentee & Mentor Match" />
+    </div>
+
+    <div class="footer-info">
+      <div class="footer-info-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span>X street, city Zaporizhzhia, Ukraine</span>
+      </div>
+      <div class="footer-info-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <a href="mailto:vyshnevetskiyvolodymyr@gmail.com">vyshnevetskiyvolodymyr@gmail.com</a>
+      </div>
+      <div class="footer-info-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.68h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <span>+38 (093) 0083771/571</span>
+      </div>
+    </div>
+
+    <div class="footer-social">
+      <a href="#" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+      </a>
+      <a href="#" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4V9h4v2a6 6 0 0 1 2-3z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <span>©2026 MMMatch All rights reserved.</span>
+    <div class="footer-links">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of use</a>
+      <a href="#">Sitemap</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

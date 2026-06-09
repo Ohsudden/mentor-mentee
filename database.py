@@ -5,7 +5,6 @@ from pwdlib import PasswordHash
 class Database:
     def __init__(self, db_name='mentor_mentee.db'):
         self.db_name = db_name
-        self.pwd_hasher = PasswordHash()
     
     def connect(self):
         """Establish database connection"""
@@ -21,9 +20,8 @@ class Database:
                 CREATE TABLE IF NOT EXISTS User (
                     user_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
                     name VARCHAR NOT NULL,
-                    surname VARCHAR NOT NULL,
                     email VARCHAR UNIQUE NOT NULL,
-                    role TEXT CHECK(role IN ('mentor', 'mentee', 'administrator')) NOT NULL,
+                    role TEXT CHECK(role IN ('mentor', 'mentee', 'curator', 'administrator')) NOT NULL,
                     gender TEXT CHECK(gender IN ('male', 'female', 'non-binary')),
                     password_hash VARCHAR NOT NULL,
                     age INTEGER,
@@ -44,7 +42,6 @@ class Database:
                 )
             ''')
             
-            # Create Mentee_profile table
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS Mentee_profile (
                     mentee_id INTEGER PRIMARY KEY,
@@ -78,7 +75,6 @@ class Database:
                 )
             ''')
             
-            # Create Availability table
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS Availability (
                     availability_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -158,3 +154,58 @@ class Database:
     def init_db(self):
         """Initialize the database"""
         self.create_tables()
+
+    def get_user_by_id(self, user_id):
+        """Fetch user by ID"""
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT * FROM User WHERE user_id = ?", (user_id,))
+            user = cursor.fetchone()
+            return user
+        except sqlite3.Error as e:
+            print(f"Error fetching user: {e}")
+            return None
+        finally:
+            conn.close()
+
+    def login_user(self, email, password):
+        """Authenticate user by email and password"""
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT user_id, email, password_hash FROM User WHERE email = ?", (email,))
+            user = cursor.fetchone()
+            if not user:
+                return False, "Invalid email or password"
+            if not PasswordHash.recommended().verify(password, user[2]):
+                return False, "Incorrect password."
+            return True, {"id": user[0], "email": user[1]}
+        except sqlite3.Error as e:
+            print(f"Error during login: {e}")
+            return False, "Database error"
+        finally:
+            conn.close()
+            cursor.close()
+    def create_user(self, name, email, password, confirm_password, role, gender=None, age=None, education_level=None):
+        """Create a new user"""
+        if password != confirm_password:
+            return False, "Passwords do not match"
+        
+        password_hash = PasswordHash.recommended().hash(password)
+        
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                INSERT INTO User (name, email, password_hash, role, gender, age, education_level)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (name, email, password_hash, role, gender, age, education_level))
+            conn.commit()
+            return True, "User created successfully"
+        except sqlite3.Error as e:
+            print(f"Error creating user: {e}")
+            conn.rollback()
+            return False, "Error creating user"
+        finally:
+            conn.close()

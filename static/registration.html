@@ -37,27 +37,53 @@
       <h2>Sign Up</h2>
       <form id="registration-form">
         <div class="form-group">
-          <input type="text" placeholder="Your Name" required />
+          <input type="text" name="name" placeholder="Your Name" required />
         </div>
 
         <div class="form-group">
-          <input type="email" placeholder="Your Email" required />
+          <input type="email" name="email" placeholder="Your Email" required />
         </div>
 
         <div class="form-group">
-          <input type="password" placeholder="Password" required />
+          <input type="password" name="password" placeholder="Password" required />
         </div>
 
         <div class="form-group">
-          <input type="password" placeholder="Confirm Password" required />
+          <input type="password" name="confirm_password" placeholder="Confirm Password" required />
         </div>
+        
 
         <div class="role-selection">
           <label class="role-selection-label">I want to be:</label>
           <div class="role-buttons">
             <button type="button" class="role-btn active" data-role="mentee">Mentee</button>
             <button type="button" class="role-btn" data-role="mentor">Mentor</button>
+            <button type="button" class="role-btn" data-role="curator">Curator</button>
           </div>
+        </div>
+
+        <div class="form-group">
+          <select name="gender" required>
+            <option value="">Select Gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="non_binary">Non-Binary</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <input type="number" name="age" placeholder="Age" required />
+        </div>
+
+        <div class="form-group">
+          <select name="education_level">
+            <option value="">Select Education Level</option>
+            <option value="high_school">High School</option>
+            <option value="undergrad">Undergraduate</option>
+            <option value="postgrad">Postgraduate</option>
+            <option value="phd">PhD</option>
+            <option value="postdoc">Postdoctoral</option>
+          </select>
         </div>
 
         <button type="submit" class="submit-btn">Register</button>
@@ -114,25 +140,51 @@
 </footer>
 
 <script>
-  // Role selection toggle
   const roleButtons = document.querySelectorAll('.role-btn');
+  let selectedRole = document.querySelector('.role-btn.active').dataset.role;
+  
   roleButtons.forEach(button => {
     button.addEventListener('click', (e) => {
       e.preventDefault();
       roleButtons.forEach(btn => btn.classList.remove('active'));
       button.classList.add('active');
+      selectedRole = button.dataset.role;
     });
   });
-
-  // Form submission
   const form = document.getElementById('registration-form');
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    // Add your form submission logic here
-    console.log('Form submitted');
+    
+    const formData = {
+      name: form.elements['name'].value,
+      email: form.elements['email'].value,
+      password: form.elements['password'].value,
+      confirm_password: form.elements['confirm_password'].value,
+      role: selectedRole,
+      gender: form.elements['gender'].value,
+      age: parseInt(form.elements['age'].value),
+      education_level: form.elements['education_level'].value
+    };
+    
+    try {
+      const response = await fetch('/api/register/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+      
+      if (response.ok) {
+        console.log('Registration successful');
+      } else {
+        console.error('Registration failed:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+    }
   });
 
-  // FAQ accordion functionality
   document.querySelectorAll(".faq-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const item   = btn.closest(".faq-item");
