@@ -38,7 +38,7 @@
           </a>
         </li>
         <li class="sidebar-item">
-          <a href="#" class="sidebar-link">
+          <a href="/questionnaire" class="sidebar-link">
             <img src="/static/img/questionnaire.png" alt="Questionnaire" class="sidebar-icon" />
             <span>Questionnaire</span>
           </a>
@@ -56,72 +56,64 @@
   <main class="main-content">
     <div class="settings-container">
       <h1 class="settings-title">Settings</h1>
-      
+
       <div class="settings-card">
         <div class="settings-profile">
-          <img src="/static/img/avatar.png" alt="Profile" class="profile-avatar" />
+          <img
+            src="{% if user and user.pp_image %}/static/{{ user.pp_image }}{% else %}/static/img/avatar.png{% endif %}"
+            alt="Profile"
+            class="profile-avatar"
+          />
         </div>
-        
-        <form class="settings-form">
+
+        <form class="settings-form" id="settingsForm">
           <div class="form-row">
             <div class="form-group">
-              <label for="name">Name</label>
-              <input type="text" id="name" placeholder="Your Name" />
+              <label for="Name">Name</label>
+              <input type="text" id="Name" name="Name" placeholder="Your Name" value="{{ user.name if user else '' }}" />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label for="email">Email</label>
-              <div class="form-group-with-btn">
-                <input type="email" id="email" placeholder="Your Email" />
-                <button type="button" class="btn btn-secondary">Change</button>
-              </div>
+              <label for="education-level">Education level</label>
+              <input type="text" id="education-level" name="education_level" placeholder="Your Education Level" value="{{ user.education_level if user else '' }}" />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label for="password">Password</label>
-              <input type="password" id="password" placeholder="Password" />
+              <label for="age">Age</label>
+              <input type="number" id="age" name="age" placeholder="Your Age" value="{{ user.age if user else '' }}" />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label for="native-lang">Native language</label>
-              <select id="native-lang">
-                <option value="">Select native language</option>
-                <option value="en">English</option>
-                <option value="uk">Ukrainian</option>
-                <option value="ru">Russian</option>
-              </select>
+              <label for="gender">Gender</label>
+              <input type="text" id="gender" name="gender" placeholder="Your Gender" value="{{ user.gender if user else '' }}" />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label for="interface-lang">Interface language</label>
-              <select id="interface-lang">
-                <option value="">Select interface language</option>
-                <option value="en">English</option>
-                <option value="uk">Ukrainian</option>
-                <option value="ru">Russian</option>
-              </select>
+              <label for="role">Role</label>
+              <input type="text" id="role" name="role" placeholder="Your Role" value="{{ user.role if user else '' }}" />
             </div>
           </div>
+          
+
+          
         </form>
       </div>
     </div>
   </main>
 </div>
 
-
 <footer class="footer">
   <div class="footer-inner">
     <div class="footer-logo">
       <img src="/static/img/full_icon.png" alt="Mentee & Mentor Match" />
-
     </div>
 
     <div class="footer-info">
@@ -160,39 +152,93 @@
 </footer>
 
 <script>
-  // Role selection toggle
-  const roleButtons = document.querySelectorAll('.role-btn');
-  roleButtons.forEach(button => {
-    button.addEventListener('click', (e) => {
-      e.preventDefault();
-      roleButtons.forEach(btn => btn.classList.remove('active'));
-      button.classList.add('active');
-    });
-  });
+async function changeEmail(event) {
+  const button = event.currentTarget;
+  const emailInput = document.getElementById('email');
 
-  // Form submission
-  const form = document.getElementById('registration-form');
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    // Add your form submission logic here
-    console.log('Form submitted');
-  });
+  if (!button.dataset.editing) {
+    button.dataset.editing = 'true';
+    button.textContent = 'Save';
+    emailInput.disabled = false;
+    emailInput.focus();
+    emailInput.select();
+    return;
+  }
 
-  // FAQ accordion functionality
-  document.querySelectorAll(".faq-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const item   = btn.closest(".faq-item");
-      const isOpen = item.classList.contains("open");
-      document.querySelectorAll(".faq-item").forEach(i => {
-        i.classList.remove("open");
-        i.querySelector(".faq-btn").setAttribute("aria-expanded", "false");
-      });
-      if (!isOpen) {
-        item.classList.add("open");
-        btn.setAttribute("aria-expanded", "true");
-      }
+  const newEmail = emailInput.value.trim();
+
+  if (!newEmail) {
+    alert('Please enter a valid email address.');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('email', newEmail);
+
+  try {
+    const response = await fetch('/api/update-email', {
+      method: 'POST',
+      body: formData
     });
-  });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      alert(result?.message || 'Failed to change email.');
+      return;
+    }
+
+    alert('Email changed successfully.');
+    emailInput.disabled = true;
+    button.textContent = 'Change';
+    delete button.dataset.editing;
+  } catch (error) {
+    console.error('Error changing email:', error);
+    alert('An error occurred. Please try again later.');
+  }
+}
+
+async function updateNativeLanguage(event) {
+  const nativeLanguage = event.target.value;
+
+  try {
+    const response = await fetch('/api/update-native-language', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ native_language: nativeLanguage })
+    });
+
+    if (response.ok) {
+      alert('Native language updated successfully.');
+    } else {
+      alert('Failed to update native language. Please try again.');
+    }
+  } catch (error) {
+    console.error('Error updating native language:', error);
+    alert('An error occurred. Please try again later.');
+  }
+}
+
+async function updateInterfaceLanguage(event) {
+  const interfaceLanguage = event.target.value;
+
+  try {
+    const response = await fetch('/api/update-interface-language', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ interface_language: interfaceLanguage })
+    });
+
+    if (response.ok) {
+      alert('Interface language updated successfully.');
+    } else {
+      alert('Failed to update interface language. Please try again.');
+    }
+  } catch (error) {
+    console.error('Error updating interface language:', error);
+    alert('An error occurred. Please try again later.');
+  }
+}
 </script>
 
 </body>

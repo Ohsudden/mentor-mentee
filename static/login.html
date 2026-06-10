@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MMMatch — Log In</title>
+  <meta name="description" content="Log in to your MMMatch account and continue your mentoring journey." />
+  <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body class="registration-page">
+
+<header>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <img src="/static/img/logo.png" alt="MMMatch" width="60" height="60" />
+        MMMatch
+      </a>
+      <div class="nav-actions">
+        <a href="/login" class="btn btn-primary">Log in</a>
+        <a href="/registration" class="btn btn-ghost">Sign up</a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<main class="registration-main">
+  <div class="registration-container">
+    <div class="registration-header">
+      <h1>Welcome Back</h1>
+      <p>Log in to continue connecting with mentors and mentees</p>
+    </div>
+
+    <div class="form-card">
+      <h2>Log In</h2>
+      <form id="login-form">
+        <div class="form-group">
+          <input type="email" name="email" placeholder="Your Email" required />
+        </div>
+
+        <div class="form-group">
+          <input type="password" name="password" placeholder="Password" required />
+        </div>
+
+
+        <button type="submit" class="submit-btn">Log In</button>
+
+        <div class="form-footer">
+          Don’t have an account? <a href="/registration">Sign up</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <img src="/static/img/full_icon.png" alt="Mentee & Mentor Match" />
+    </div>
+
+    <div class="footer-info">
+      <div class="footer-info-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+          <circle cx="12" cy="10" r="3"/>
+        </svg>
+        <span>X street, city Zaporizhzhia, Ukraine</span>
+      </div>
+      <div class="footer-info-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+        <a href="mailto:vyshnevetskiyvolodymyr@gmail.com">vyshnevetskiyvolodymyr@gmail.com</a>
+      </div>
+      <div class="footer-info-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.68h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+        <span>+38 (063) 7597571</span>
+      </div>
+    </div>
+
+    <div class="footer-social">
+      <a href="#" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+        </svg>
+      </a>
+      <a href="#" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4V9h4v2a6 6 0 0 1 2-3z"/>
+          <rect x="2" y="9" width="4" height="12"/>
+          <circle cx="4" cy="4" r="2"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <span>©2026 MMMatch All rights reserved.</span>
+    <div class="footer-links">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of use</a>
+      <a href="#">Sitemap</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+const form = document.getElementById('login-form');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const formData = new FormData();
+  formData.append('email', form.elements['email'].value);
+  formData.append('password', form.elements['password'].value);
+
+  const response = await fetch('/api/login', {
+    method: 'POST',
+    body: formData
+  });
+
+  if (response.redirected) {
+    window.location.href = response.url;
+    return;
+  }
+
+  const result = await response.json();
+  console.log(result);
+});
+  document.querySelectorAll(".faq-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const item = btn.closest(".faq-item");
+      const isOpen = item.classList.contains("open");
+
+      document.querySelectorAll(".faq-item").forEach(i => {
+        i.classList.remove("open");
+        i.querySelector(".faq-btn").setAttribute("aria-expanded", "false");
+      });
+
+      if (!isOpen) {
+        item.classList.add("open");
+        btn.setAttribute("aria-expanded", "true");
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

@@ -12,7 +12,6 @@ from dotenv import load_dotenv
 from phoenix.client import Client
 from database import Database
 
-# Pydantic models
 class RegisterRequest(BaseModel):
     name: str
     email: str
@@ -46,14 +45,34 @@ async def registration(request: Request):
 
 
 @app.get("/settings", response_class=HTMLResponse)
-async def settings_me(request: Request):
+def settings_page(request: Request):
+    user_id = request.session.get("user_id")
+
+    if not user_id:
+        return RedirectResponse(url="/login", status_code=303)
+
+    user_data = db.get_user_by_id(user_id)
+    print(user_data)
+    return templates.TemplateResponse(
+        request,
+        "settings.html",
+        {
+            "user": user_data
+        }
+    )
+@app.get("/settings/{userid}", response_class=HTMLResponse)
+async def settings(request: Request, userid: int):
     user_id = request.session.get("user_id")
     if not user_id:
         return RedirectResponse(url="/login", status_code=302)
-    user = db.get_user_by_id(user_id)
+    if user_id != userid:
+        return RedirectResponse(url=f"/settings/{user_id}", status_code=302)
+    user = db.get_user_by_id(userid)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return templates.TemplateResponse(request, "settings.html", {"userid": user_id, "user": user})
+    print(user)
+    return templates.TemplateResponse(request, "settings.html", {"userid": userid, "user": user})
+
 
 @app.get("/questionnaire", response_class=HTMLResponse)
 def read_questionnaire(request: Request):
@@ -76,24 +95,25 @@ async def register_user(request: RegisterRequest):
         return JSONResponse(status_code=400, content={"success": False, "message": message})
 
 
-@app.get("/api/login", response_class=HTMLResponse)
+@app.post("/api/login")
 def api_login(
-        request: Request,
-        email: str = Form(...),
-        password: str = Form(...)
-    ):
+    request: Request,
+    email: str = Form(...),
+    password: str = Form(...)
+):
     success, user_data = db.login_user(email, password)
 
-
     if not success:
-        return JSONResponse(status_code=401, content={"success": False, "message": user_data})
+        return JSONResponse(
+            status_code=401,
+            content={"success": False, "message": user_data}
+        )
 
     request.session["user_email"] = user_data["email"]
     request.session["user_id"] = user_data["id"]
     request.session["user_role"] = user_data.get("role")
 
-
-    return RedirectResponse(url=f"/settings/{user_data['id']}", status_code=302)
+    return RedirectResponse(url=f"/settings/{user_data['id']}", status_code=303)
 
 def session_info(request: Request):
     return {

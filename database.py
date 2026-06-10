@@ -5,10 +5,12 @@ from pwdlib import PasswordHash
 class Database:
     def __init__(self, db_name='mentor_mentee.db'):
         self.db_name = db_name
-    
+        self.db_path = 'E:\mentor-mentee\mentor_mentee.db'
     def connect(self):
-        """Establish database connection"""
-        return sqlite3.connect(self.db_name)
+            conn = sqlite3.connect(self.db_path)
+            conn.row_factory = sqlite3.Row
+            return conn
+
     
     def create_tables(self):
         """Create all database tables"""
@@ -155,38 +157,62 @@ class Database:
         """Initialize the database"""
         self.create_tables()
 
+    
     def get_user_by_id(self, user_id):
-        """Fetch user by ID"""
         conn = self.connect()
         cursor = conn.cursor()
-        try:
-            cursor.execute("SELECT * FROM User WHERE user_id = ?", (user_id,))
-            user = cursor.fetchone()
-            return user
-        except sqlite3.Error as e:
-            print(f"Error fetching user: {e}")
+
+        cursor.execute(
+            "SELECT user_id, name, email, role, gender, age, education_level "
+            "FROM User WHERE user_id = ?",
+            (user_id,)
+        )
+
+        row = cursor.fetchone()
+        conn.close()
+
+        if not row:
             return None
-        finally:
-            conn.close()
+
+        return {
+            "user_id": row[0],
+            "name": row[1],
+            "email": row[2],
+            "role": row[3],
+            "gender": row[4],
+            "age": row[5],
+            "education_level": row[6]
+    }
 
     def login_user(self, email, password):
-        """Authenticate user by email and password"""
-        conn = self.connect()
-        cursor = conn.cursor()
-        try:
-            cursor.execute("SELECT user_id, email, password_hash FROM User WHERE email = ?", (email,))
-            user = cursor.fetchone()
-            if not user:
-                return False, "Invalid email or password"
-            if not PasswordHash.recommended().verify(password, user[2]):
-                return False, "Incorrect password."
-            return True, {"id": user[0], "email": user[1]}
-        except sqlite3.Error as e:
-            print(f"Error during login: {e}")
-            return False, "Database error"
-        finally:
-            conn.close()
-            cursor.close()
+        connection = sqlite3.connect(self.db_name)
+        cursor = connection.cursor()
+
+        cursor.execute(
+            "SELECT user_id, name, email, password_hash, role, gender, age, education_level FROM user WHERE email = ?",
+            (email,)
+        )
+        row = cursor.fetchone()
+        connection.close()
+
+        if not row:
+            return False, "User not found."
+
+        stored_hash = row[3]
+        if not PasswordHash.recommended().verify(password, stored_hash):
+            return False, "Incorrect password."
+
+        return True, {
+            "id": row[0],
+            "name": row[1],
+            "email": row[2],
+            "role": row[4],
+            "gender": row[5],
+            "age": row[6],
+            "education_level": row[7]
+        }
+    
+
     def create_user(self, name, email, password, confirm_password, role, gender=None, age=None, education_level=None):
         """Create a new user"""
         if password != confirm_password:
