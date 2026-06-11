@@ -76,7 +76,54 @@ async def settings(request: Request, userid: int):
 
 @app.get("/questionnaire", response_class=HTMLResponse)
 def read_questionnaire(request: Request):
-    return templates.TemplateResponse(request, "questionnaire.html")
+    if not request.session.get("user_id"):
+        return RedirectResponse(url="/login", status_code=303)
+    
+    elif request.session.get("user_role") == "mentee":
+        return templates.TemplateResponse(request, "questionnaire.html")
+
+@app.post("/api/questionnaire")
+async def submit_questionnaire(request: Request):
+    if request.session.get("user_role") == "mentee":
+        body = await request.json()           
+        user_id = request.session.get("user_id")
+        db.questionnaire_submission(
+            user_id,
+            body.get("papers_read"),
+            body.get("lit_review"),
+            body.get("meeting_frequency"),
+            body.get("communication_abilities"),
+            body.get("research_tool_skill"),
+            body.get("deadline_management"),
+            body.get("domain_knowledge")
+        )
+    return JSONResponse(status_code=200, content={"message": "Questionnaire submitted successfully"})
+
+@app.get("/profile", response_class=HTMLResponse)
+def profile(request: Request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return RedirectResponse(url="/login", status_code=303)
+    
+    user_data = db.get_user_by_id(user_id)
+    return templates.TemplateResponse(request, "profile.html", {"user": user_data})
+
+@app.post("/api/profile")
+async def update_profile(request: Request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return JSONResponse(status_code=401, content={"message": "Unauthorized"})
+    
+    body = await request.json()
+    if request.session.get("user_role") == "mentor":
+        db.fill_mentor_profile(
+            user_id,
+            body.get("experience"),   
+            body.get("expertise"),
+            body.get("max_groups")     
+        )
+    elif request.session.get("user_role") == "mentee":
+        db.fill_mentee_profile(user_id, body.get("skills"), body.get("domain_of_knowledge"), body.get("favourable_program_type"), body.get("experience_level"), body.get("research_goals"), body.get("short_term_goals"), body.get("long_term_goals"), body.get("mentor_expectations"))
 
 @app.get("/login", response_class=HTMLResponse)
 async def login(request: Request):
@@ -114,6 +161,9 @@ def api_login(
     request.session["user_role"] = user_data.get("role")
 
     return RedirectResponse(url=f"/settings/{user_data['id']}", status_code=303)
+
+
+
 
 def session_info(request: Request):
     return {

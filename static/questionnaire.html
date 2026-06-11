@@ -58,7 +58,7 @@
       <h1 class="settings-title">Questionnaire</h1>
       
       <div class="settings-card questionnaire-card">
-        <form class="settings-form">
+        <form class="settings-form" onsubmit="event.preventDefault(); send_questionnaire()">
           
           <div class="form-row">
             <div class="form-group">
@@ -203,6 +203,24 @@
     </div>
   </div>
 </footer>
+<script>
+function send_questionnaire() {
+  const data = {
+    papers_read: document.getElementById('papers-read').value,
+    lit_review: document.getElementById('lit-review').value,
+    meeting_frequency: document.getElementById('meeting-frequency').value,
+    communication_abilities: document.getElementById('communication').value,  // ← see Bug 2
+    research_tool_skill: document.getElementById('research-tools').value,     // ← see Bug 2
+    deadline_management: document.getElementById('deadline-management').value,
+    domain_knowledge: document.getElementById('domain-knowledge').value
+  };
 
+  return fetch('/api/questionnaire', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+}
+</script>
 </body>
 </html>

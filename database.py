@@ -235,3 +235,56 @@ class Database:
             return False, "Error creating user"
         finally:
             conn.close()
+
+        def fill_mentor_profile(self, user_id, field_of_expertise, experience, max_groups):
+            conn = self.connect()
+            cursor = conn.cursor()
+            try:
+                cursor.execute('''
+                    INSERT INTO Mentor_profile (user_id, field_of_expertise, experience, max_groups)
+                    VALUES (?, ?, ?, ?)
+                ''', (user_id, field_of_expertise, experience, max_groups))
+                conn.commit()
+                return True, "Mentor profile created successfully"
+            except sqlite3.Error as e:
+                print(f"Error creating mentor profile: {e}")
+                conn.rollback()
+                return False, "Error creating mentor profile"
+            finally:
+                conn.close()
+
+        def fill_mentee_profile(self, user_id, skills, domain_of_study, favourable_program_type, experience_level, research_goals, short_term_goals, long_term_goals, mentor_expectations):
+            conn = self.connect()
+            cursor = conn.cursor()
+            try:
+                cursor.execute('''
+                    INSERT INTO Mentee_profile (user_id, skills, domain_of_study, favourable_program_type, experience_level, research_goals, short_term_goals, long_term_goals, mentor_expectations)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (user_id, skills, domain_of_study, favourable_program_type, experience_level, research_goals, short_term_goals, long_term_goals, mentor_expectations))
+                conn.commit()
+                return True, "Mentee profile created successfully"
+            except sqlite3.Error as e:
+                print(f"Error creating mentee profile: {e}")
+                conn.rollback()
+                return False, "Error creating mentee profile"
+            finally:
+                conn.close()
+
+        def questionnaire_submission(self, mentee_id, papers_read_plan, lit_review_confidence, meeting_frequency, communication_abilities, research_tool_skill, deadline_management, domain_knowledge):
+            conn = self.connect()
+            cursor = conn.cursor()
+            try:
+                cursor.execute('''
+                    INSERT INTO Questionnaire (mentee_id, papers_read_plan, lit_review_confidence, meeting_frequency, communication_abilities, research_tool_skill, deadline_management, domain_knowledge)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (mentee_id, papers_read_plan, lit_review_confidence, meeting_frequency, communication_abilities, research_tool_skill, deadline_management, domain_knowledge))
+                conn.commit()
+                return True, "Questionnaire submitted successfully"
+            except sqlite3.Error as e:
+                print(f"Error submitting questionnaire: {e}")
+                conn.rollback()
+                return False, "Error submitting questionnaire"
+            finally:
+                conn.close()
+
+        

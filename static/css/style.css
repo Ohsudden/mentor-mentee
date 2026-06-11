@@ -1049,3 +1049,40 @@ ul {
     margin-right: var(--space-lg);
   }
 }
+
+
+.profile-section {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-xl);
+}
+
+.profile-section-title {
+  font-size: var(--font-size-large);
+  font-weight: 600;
+  margin-bottom: var(--space-xl);
+  color: var(--color-dark);
+}
+
+.form-group textarea {
+  min-height: 120px;
+  resize: vertical;
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  background: white;
+  color: var(--color-dark);
+  transition: border-color 150ms ease;
+}
+
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.submit-btn {
+  width: fit-content;
+  min-width: 180px;
+  margin-top: var(--space-lg);
+}
