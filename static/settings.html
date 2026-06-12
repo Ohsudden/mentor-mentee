@@ -44,6 +44,11 @@
           </a>
         </li>
         <li class="sidebar-item">
+          <a href="/profile" class="sidebar-link">
+            <img src="/static/img/profile.png" alt="Profile" class="sidebar-icon" />
+            <span>Profile</span>
+          </a>
+        <li class="sidebar-item">
           <a href="/settings" class="sidebar-link active settings-link">
             <img src="/static/img/cogwheel.png" alt="Settings" class="sidebar-icon" />
             <span>Settings</span>
@@ -105,6 +110,99 @@
 
           
         </form>
+          <form class="settings-form" onsubmit="event.preventDefault(); save_availability()">
+      <h2 class="profile-section-title">Availability</h2>
+
+      <!-- CURRENT SAVED AVAILABILITY -->
+      <div id="current-availability-list" style="margin-bottom: var(--space-2xl);">
+        <p style="font-size: var(--font-size-small); font-weight: 500; color: var(--color-gray); margin-bottom: var(--space-md);">
+          Saved slots
+        </p>
+        <p id="no-availability-msg" style="color: var(--color-gray); font-size: var(--font-size-small);">
+          No availability set yet.
+        </p>
+      </div>
+
+      <hr style="border:none; border-top:1px solid var(--color-border); margin-bottom: var(--space-2xl);" />
+
+      <!-- NEW SLOTS -->
+      <p style="font-size: var(--font-size-small); font-weight: 500; color: var(--color-gray); margin-bottom: var(--space-md);">
+        Add new slots
+      </p>
+
+      <div id="availability-slots">
+        <div class="availability-slot" style="display:flex; gap:var(--space-lg); align-items:flex-end; margin-bottom:var(--space-xl); padding-bottom:var(--space-xl); border-bottom:1px solid var(--color-border);">
+          
+          <div class="form-group" style="flex:1.5">
+            <label>Day of the Week</label>
+            <select name="day_of_the_week">
+              <option value="">Select day</option>
+              <option value="Monday">Monday</option>
+              <option value="Tuesday">Tuesday</option>
+              <option value="Wednesday">Wednesday</option>
+              <option value="Thursday">Thursday</option>
+              <option value="Friday">Friday</option>
+              <option value="Saturday">Saturday</option>
+              <option value="Sunday">Sunday</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="flex:1">
+            <label>Start Time</label>
+            <input type="time" name="start_time" />
+          </div>
+
+          <div class="form-group" style="flex:1">
+            <label>End Time</label>
+            <input type="time" name="end_time" />
+          </div>
+
+          <div class="form-group" style="flex:1.5">
+            <label>Timezone</label>
+            <select name="timezone">
+              <option value="">Select timezone</option>
+              <option value="UTC-12">UTC-12</option>
+              <option value="UTC-11">UTC-11</option>
+              <option value="UTC-10">UTC-10</option>
+              <option value="UTC-9">UTC-9</option>
+              <option value="UTC-8">UTC-8 (PST)</option>
+              <option value="UTC-7">UTC-7 (MST)</option>
+              <option value="UTC-6">UTC-6 (CST)</option>
+              <option value="UTC-5">UTC-5 (EST)</option>
+              <option value="UTC-4">UTC-4 (AST)</option>
+              <option value="UTC-3">UTC-3</option>
+              <option value="UTC-2">UTC-2</option>
+              <option value="UTC-1">UTC-1</option>
+              <option value="UTC+0">UTC+0 (GMT)</option>
+              <option value="UTC+1">UTC+1 (CET)</option>
+              <option value="UTC+2">UTC+2 (EET)</option>
+              <option value="UTC+3">UTC+3 (MSK)</option>
+              <option value="UTC+4">UTC+4</option>
+              <option value="UTC+5">UTC+5</option>
+              <option value="UTC+5:30">UTC+5:30 (IST)</option>
+              <option value="UTC+6">UTC+6</option>
+              <option value="UTC+7">UTC+7</option>
+              <option value="UTC+8">UTC+8 (CST)</option>
+              <option value="UTC+9">UTC+9 (JST)</option>
+              <option value="UTC+10">UTC+10 (AEST)</option>
+              <option value="UTC+11">UTC+11</option>
+              <option value="UTC+12">UTC+12</option>
+            </select>
+          </div>
+
+          <div style="padding-bottom:var(--space-md)">
+            <button type="button" class="btn-secondary" onclick="remove_slot(this)">Remove</button>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-ghost" onclick="add_slot()"
+        style="margin-bottom:var(--space-xl); border:1px dashed var(--color-border); width:100%; padding:var(--space-md);">
+        + Add another time slot
+      </button>
+
+      <button type="submit" class="btn btn-primary">Save Availability</button>
+    </form>
       </div>
     </div>
   </main>
@@ -152,6 +250,130 @@
 </footer>
 
 <script>
+function save_availability() {
+  const slots = [];
+  document.querySelectorAll('#availability-slots .availability-slot').forEach(slotEl => {
+    const day      = slotEl.querySelector('select[name="day_of_the_week"]').value;
+    const start    = slotEl.querySelector('input[name="start_time"]').value;
+    const end      = slotEl.querySelector('input[name="end_time"]').value;
+    const timezone = slotEl.querySelector('select[name="timezone"]').value;
+    if (day && start && end && timezone) {
+      slots.push({ day_of_the_week: day, start_time: start, end_time: end, timezone });
+    }
+  });
+
+  if (slots.length === 0) {
+    alert('Please add at least one valid availability slot.');
+    return;
+  }
+
+  fetch('/api/availability', {          
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ slots })    
+  })
+  .then(res => {
+    if (!res.ok) return res.json().then(d => { throw new Error(d.message); });
+    return res.json();
+  })
+  .then(() => {
+    alert('Availability updated successfully.');
+    load_availability();
+  })
+  .catch(err => {
+    console.error('Error saving availability:', err);
+    alert(`Error: ${err.message || 'Could not save availability.'}`);
+  });
+}
+ 
+
+function render_current_availability(slots) {
+  const list = document.getElementById('current-availability-list');
+  const noMsg = document.getElementById('no-availability-msg');
+  list.querySelectorAll('.saved-slot-row').forEach(el => el.remove());
+
+  if (!slots || slots.length === 0) {
+    noMsg.style.display = 'block';
+    return;
+  }
+  noMsg.style.display = 'none';
+
+  slots.forEach(slot => {
+    const row = document.createElement('div');
+    row.className = 'saved-slot-row';
+    row.style.cssText = `
+      display:flex; align-items:center; justify-content:space-between;
+      padding: var(--space-md) var(--space-lg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-md);
+      background: var(--color-light-gray);
+      font-size: var(--font-size-small);
+      gap: var(--space-lg);
+    `;
+    row.innerHTML = `
+      <span style="font-weight:500; min-width:100px;">${slot.day_of_the_week}</span>
+      <span style="color:var(--color-gray);">${slot.start_time} — ${slot.end_time}</span>
+      <span style="color:var(--color-gray);">${slot.timezone}</span>
+      <button type="button" class="btn-secondary"
+        style="padding:4px 12px; font-size:var(--font-size-small); margin-left:auto;"
+        onclick="delete_saved_slot(this, '${slot.day_of_the_week}', '${slot.start_time}', '${slot.end_time}', '${slot.timezone}')">
+        Remove
+      </button>
+    `;
+    list.appendChild(row);
+  });
+}
+function add_slot() {
+  const container = document.getElementById('availability-slots');
+  const first = container.querySelector('.availability-slot');
+  const clone = first.cloneNode(true);
+  clone.querySelectorAll('select, input').forEach(el => el.value = '');
+  // No need to change onclick — remove_slot() is already set on the button
+  container.appendChild(clone);
+}
+async function delete_saved_slot(btn, day, start, end, timezone) {
+  try {
+    const res = await fetch('/api/delete_availability', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ day_of_the_week: day, start_time: start, end_time: end, timezone })
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(`Error: ${data.message}`); return; }
+    btn.closest('.saved-slot-row').remove();
+    if (!document.querySelector('.saved-slot-row')) {
+      document.getElementById('no-availability-msg').style.display = 'block';
+    }
+  } catch (err) {
+    alert('Network error — could not remove slot.');
+    console.error(err);
+  }
+}
+
+function remove_slot(btn) {
+  const slots = document.querySelectorAll('.availability-slot');
+  if (slots.length === 1) {
+    alert('You need at least one slot row.');
+    return;
+  }
+  btn.closest('.availability-slot').remove();
+}
+
+async function load_availability() {
+  try {
+    const res = await fetch('/current_availability');
+    if (!res.ok) return;
+    const data = await res.json();
+    render_current_availability(data.availability);
+  } catch (err) {
+    console.error('Failed to load availability:', err);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', load_availability);
+
+
 async function changeEmail(event) {
   const button = event.currentTarget;
   const emailInput = document.getElementById('email');
@@ -198,47 +420,7 @@ async function changeEmail(event) {
   }
 }
 
-async function updateNativeLanguage(event) {
-  const nativeLanguage = event.target.value;
 
-  try {
-    const response = await fetch('/api/update-native-language', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ native_language: nativeLanguage })
-    });
-
-    if (response.ok) {
-      alert('Native language updated successfully.');
-    } else {
-      alert('Failed to update native language. Please try again.');
-    }
-  } catch (error) {
-    console.error('Error updating native language:', error);
-    alert('An error occurred. Please try again later.');
-  }
-}
-
-async function updateInterfaceLanguage(event) {
-  const interfaceLanguage = event.target.value;
-
-  try {
-    const response = await fetch('/api/update-interface-language', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ interface_language: interfaceLanguage })
-    });
-
-    if (response.ok) {
-      alert('Interface language updated successfully.');
-    } else {
-      alert('Failed to update interface language. Please try again.');
-    }
-  } catch (error) {
-    console.error('Error updating interface language:', error);
-    alert('An error occurred. Please try again later.');
-  }
-}
 </script>
 
 </body>

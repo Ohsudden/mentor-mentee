@@ -6,7 +6,7 @@
   <title>MMMatch — Questionnaire</title>
   <meta name="description" content="Complete your mentorship profile questionnaire." />
   <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="/static/css/style.css?v=2" />
 </head>
 <body class="dashboard-page">
 
@@ -38,9 +38,15 @@
           </a>
         </li>
         <li class="sidebar-item">
-          <a href="/questionnaire" class="sidebar-link active">
+          <a href="/questionnaire" class="sidebar-link">
             <img src="/static/img/questionnaire.png" alt="Questionnaire" class="sidebar-icon" />
             <span>Questionnaire</span>
+          </a>
+        </li>
+         <li class="sidebar-item">
+          <a href="/profile" class="sidebar-link" active>
+            <img src="/static/img/profile.png" alt="Profile" class="sidebar-icon" />
+            <span>Profile</span>
           </a>
         </li>
         <li class="sidebar-item">
@@ -53,6 +59,7 @@
     </nav>
   </aside>
 
+  <main class="main-content"> 
 {% if user and user.role == 'mentor' %}
 
 <div class="profile-section">
@@ -202,7 +209,8 @@
   onclick="{% if user.role == 'mentor' %}send_mentor_profile(){% else %}send_mentee_profile(){% endif %}">
   Save Profile
 </button>
-
+</main> 
+</div>
 <footer class="footer">
   <div class="footer-inner">
     <div class="footer-logo">

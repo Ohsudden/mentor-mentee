@@ -43,6 +43,12 @@
             <span>Questionnaire</span>
           </a>
         </li>
+         <li class="sidebar-item">
+          <a href="/profile" class="sidebar-link">
+            <img src="/static/img/profile.png" alt="Profile" class="sidebar-icon" />
+            <span>Profile</span>
+          </a>
+        </li>
         <li class="sidebar-item">
           <a href="/settings" class="sidebar-link">
             <img src="/static/img/cogwheel.png" alt="Settings" class="sidebar-icon" />
@@ -209,8 +215,8 @@ function send_questionnaire() {
     papers_read: document.getElementById('papers-read').value,
     lit_review: document.getElementById('lit-review').value,
     meeting_frequency: document.getElementById('meeting-frequency').value,
-    communication_abilities: document.getElementById('communication').value,  // ← see Bug 2
-    research_tool_skill: document.getElementById('research-tools').value,     // ← see Bug 2
+    communication_abilities: document.getElementById('communication').value,  
+    research_tool_skill: document.getElementById('research-tools').value,    
     deadline_management: document.getElementById('deadline-management').value,
     domain_knowledge: document.getElementById('domain-knowledge').value
   };

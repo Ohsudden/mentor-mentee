@@ -84,6 +84,7 @@ class Database:
                     day_of_the_week TEXT NOT NULL,
                     start_time TIME NOT NULL,
                     end_time TIME NOT NULL,
+                    timezone VARCHAR NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE
                 )
@@ -236,55 +237,146 @@ class Database:
         finally:
             conn.close()
 
-        def fill_mentor_profile(self, user_id, field_of_expertise, experience, max_groups):
-            conn = self.connect()
-            cursor = conn.cursor()
-            try:
-                cursor.execute('''
-                    INSERT INTO Mentor_profile (user_id, field_of_expertise, experience, max_groups)
-                    VALUES (?, ?, ?, ?)
-                ''', (user_id, field_of_expertise, experience, max_groups))
-                conn.commit()
-                return True, "Mentor profile created successfully"
-            except sqlite3.Error as e:
-                print(f"Error creating mentor profile: {e}")
-                conn.rollback()
-                return False, "Error creating mentor profile"
-            finally:
-                conn.close()
+    def fill_mentor_profile(self, user_id, field_of_expertise, experience, max_groups):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                INSERT INTO Mentor_profile (user_id, field_of_expertise, experience, max_groups)
+                VALUES (?, ?, ?, ?)
+            ''', (user_id, field_of_expertise, experience, max_groups))
+            conn.commit()
+            return True, "Mentor profile created successfully"
+        except sqlite3.Error as e:
+            print(f"Error creating mentor profile: {e}")
+            conn.rollback()
+            return False, "Error creating mentor profile"
+        finally:
+            conn.close()
 
-        def fill_mentee_profile(self, user_id, skills, domain_of_study, favourable_program_type, experience_level, research_goals, short_term_goals, long_term_goals, mentor_expectations):
-            conn = self.connect()
-            cursor = conn.cursor()
-            try:
-                cursor.execute('''
-                    INSERT INTO Mentee_profile (user_id, skills, domain_of_study, favourable_program_type, experience_level, research_goals, short_term_goals, long_term_goals, mentor_expectations)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ''', (user_id, skills, domain_of_study, favourable_program_type, experience_level, research_goals, short_term_goals, long_term_goals, mentor_expectations))
-                conn.commit()
-                return True, "Mentee profile created successfully"
-            except sqlite3.Error as e:
-                print(f"Error creating mentee profile: {e}")
-                conn.rollback()
-                return False, "Error creating mentee profile"
-            finally:
-                conn.close()
+    def fill_mentee_profile(self, user_id, skills, domain_of_study, favourable_program_type, experience_level, research_goals, short_term_goals, long_term_goals, mentor_expectations):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                INSERT INTO Mentee_profile (user_id, skills, domain_of_study, favourable_program_type, experience_level, research_goals, short_term_goals, long_term_goals, mentor_expectations)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (user_id, skills, domain_of_study, favourable_program_type, experience_level, research_goals, short_term_goals, long_term_goals, mentor_expectations))
+            conn.commit()
+            return True, "Mentee profile created successfully"
+        except sqlite3.Error as e:
+            print(f"Error creating mentee profile: {e}")
+            conn.rollback()
+            return False, "Error creating mentee profile"
+        finally:
+            conn.close()
 
-        def questionnaire_submission(self, mentee_id, papers_read_plan, lit_review_confidence, meeting_frequency, communication_abilities, research_tool_skill, deadline_management, domain_knowledge):
-            conn = self.connect()
-            cursor = conn.cursor()
-            try:
-                cursor.execute('''
-                    INSERT INTO Questionnaire (mentee_id, papers_read_plan, lit_review_confidence, meeting_frequency, communication_abilities, research_tool_skill, deadline_management, domain_knowledge)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                ''', (mentee_id, papers_read_plan, lit_review_confidence, meeting_frequency, communication_abilities, research_tool_skill, deadline_management, domain_knowledge))
-                conn.commit()
-                return True, "Questionnaire submitted successfully"
-            except sqlite3.Error as e:
-                print(f"Error submitting questionnaire: {e}")
-                conn.rollback()
-                return False, "Error submitting questionnaire"
-            finally:
-                conn.close()
+    def questionnaire_submission(self, mentee_id, papers_read_plan, lit_review_confidence, meeting_frequency, communication_abilities, research_tool_skill, deadline_management, domain_knowledge):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                INSERT INTO Questionnaire (mentee_id, papers_read_plan, lit_review_confidence, meeting_frequency, communication_abilities, research_tool_skill, deadline_management, domain_knowledge)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (mentee_id, papers_read_plan, lit_review_confidence, meeting_frequency, communication_abilities, research_tool_skill, deadline_management, domain_knowledge))
+            conn.commit()
+            return True, "Questionnaire submitted successfully"
+        except sqlite3.Error as e:
+            print(f"Error submitting questionnaire: {e}")
+            conn.rollback()
+            return False, "Error submitting questionnaire"
+        finally:
+            conn.close()
 
-        
+    def create_marching(self, mentor_id, name, description, program_type, max_size, experience_level):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                INSERT INTO Matching (mentor_id, name, description, program_type, max_size, experience_level)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (mentor_id, name, description, program_type, max_size, experience_level))
+            conn.commit()
+            return True, "Matching created successfully"
+        except sqlite3.Error as e:
+            print(f"Error creating matching: {e}")
+            conn.rollback()
+            return False, "Error creating matching"
+        finally:
+            conn.close()
+
+    def assign_mentor_to_matching(self, mentee_id, group_id):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                INSERT INTO Matching_mentee (mentee_id, group_id)
+                VALUES (?, ?)
+            ''', (mentee_id, group_id))
+            conn.commit()
+            return True, "Mentor assigned to matching successfully"
+        except sqlite3.Error as e:
+            print(f"Error assigning mentor to matching: {e}")
+            conn.rollback()
+            return False, "Error assigning mentor to matching"
+        finally:
+            conn.close()
+
+    def change_availability(self, user_id, day_of_the_week, start_time, end_time, timezone):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                INSERT INTO Availability (user_id, day_of_the_week, start_time, end_time, timezone)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (user_id, day_of_the_week, start_time, end_time, timezone))
+            conn.commit()
+            return True, "Availability updated successfully"
+        except sqlite3.Error as e:
+            print(f"Error updating availability: {e}")
+            conn.rollback()
+            return False, "Error updating availability"
+        finally:
+            conn.close()
+
+    def get_availability(self, user_id):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                SELECT day_of_the_week, start_time, end_time, timezone
+                FROM Availability
+                WHERE user_id = ?
+            ''', (user_id,))
+            rows = cursor.fetchall()
+            availability_list = []
+            for row in rows:
+                availability_list.append({
+                    "day_of_the_week": row[0],
+                    "start_time": row[1],
+                    "end_time": row[2],
+                    "timezone": row[3]
+                })
+            return availability_list
+        except sqlite3.Error as e:
+            print(f"Error fetching availability: {e}")
+            return []
+        finally:
+            conn.close()
+
+    def remove_availability(self, user_id, day_of_the_week, start_time, end_time, timezone):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                DELETE FROM Availability
+                WHERE user_id = ? AND day_of_the_week = ? AND start_time = ? AND end_time = ? AND timezone = ?
+            ''', (user_id, day_of_the_week, start_time, end_time, timezone))
+            conn.commit()
+            return True, "Availability removed successfully"
+        except sqlite3.Error as e:
+            print(f"Error removing availability: {e}")
+            conn.rollback()
+            return False, "Error removing availability"
+        finally:
+            conn.close()

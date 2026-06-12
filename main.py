@@ -81,7 +81,83 @@ def read_questionnaire(request: Request):
     
     elif request.session.get("user_role") == "mentee":
         return templates.TemplateResponse(request, "questionnaire.html")
+    
+@app.get("/current_availability", response_class=JSONResponse)
+async def get_current_availability(request: Request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return JSONResponse(status_code=401, content={"message": "Unauthorized"})
 
+    try:
+        availability = db.get_availability(user_id)
+        return JSONResponse(status_code=200, content={"availability": availability})
+    except Exception as e:
+        print(f"[ERROR] fetching availability failed: {e}")
+        return JSONResponse(status_code=500, content={"message": "Internal server error"})
+
+@app.delete("/api/delete_availability")
+async def delete_availability(request: Request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return JSONResponse(status_code=401, content={"message": "Unauthorized"})
+    try:
+        body = await request.json()
+        success, message = db.remove_availability(
+            user_id,
+            body.get("day_of_the_week"),
+            body.get("start_time"),
+            body.get("end_time"),
+            body.get("timezone")
+        )
+        status = 200 if success else 500
+        return JSONResponse(status_code=status, content={"message": message})
+    except Exception as e:
+        print(f"[ERROR] removing availability failed: {e}")
+        return JSONResponse(status_code=500, content={"message": "Internal server error"})
+          
+@app.post("/api/availability")
+async def save_availability(request: Request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return JSONResponse(status_code=401, content={"message": "Unauthorized"})
+
+    try:
+        body = await request.json()
+        slots = body.get("slots", [])
+
+        existing = db.get_availability(user_id)
+        existing_keys = {
+            (a["day_of_the_week"], a["start_time"], a["end_time"], a["timezone"])
+            for a in existing
+        }
+
+        for slot in slots:
+            key = (
+                slot.get("day_of_the_week"),
+                slot.get("start_time"),
+                slot.get("end_time"),
+                slot.get("timezone")
+            )
+
+            if key in existing_keys:
+                print(f"Slot already exists: {key}")
+                continue
+
+            success, message = db.change_availability(
+                user_id,
+                slot.get("day_of_the_week"),
+                slot.get("start_time"),
+                slot.get("end_time"),
+                slot.get("timezone")
+            )
+            if not success:
+                return JSONResponse(status_code=500, content={"message": message})
+
+        return JSONResponse(status_code=200, content={"message": "Availability saved successfully"})
+    except Exception as e:
+        print(f"[ERROR] availability save failed: {e}")
+        return JSONResponse(status_code=500, content={"message": "Internal server error"})
+    
 @app.post("/api/questionnaire")
 async def submit_questionnaire(request: Request):
     if request.session.get("user_role") == "mentee":
