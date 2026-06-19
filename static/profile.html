@@ -32,25 +32,40 @@
           </a>
         </li>
         <li class="sidebar-item">
-          <a href="#" class="sidebar-link">
-            <img src="/static/img/group.png" alt="Matches" class="sidebar-icon" />
-            <span>Previous matches</span>
+          {% if user.role == "curator" %}
+          <a href="/matching_formation" class="sidebar-link">
+                        <img src="/static/img/group.png" alt="Matches" class="sidebar-icon" />
+              <span>Matching Formation</span>
           </a>
+      {% else %}
+          <a href="/previous_matches" class="sidebar-link">
+                        <img src="/static/img/group.png" alt="Matches" class="sidebar-icon" />
+              <span>Previous Matches</span>
+          </a>
+{% endif %}
         </li>
+        
         <li class="sidebar-item">
+            {% if user.role == "curator" %}
+      <a href="/current_groups" class="sidebar-link">
+                  <img src="/static/img/questionnaire.png" alt="Questionnaire" class="sidebar-icon" />
+                  <span>My current groups</span>
+                </a>
+            {% else %}
           <a href="/questionnaire" class="sidebar-link">
             <img src="/static/img/questionnaire.png" alt="Questionnaire" class="sidebar-icon" />
             <span>Questionnaire</span>
           </a>
+          {% endif %}
         </li>
-         <li class="sidebar-item">
-          <a href="/profile" class="sidebar-link" active>
+        <li class="sidebar-item">
+          <a href="/profile" class="sidebar-link active">
             <img src="/static/img/profile.png" alt="Profile" class="sidebar-icon" />
             <span>Profile</span>
           </a>
         </li>
         <li class="sidebar-item">
-          <a href="/settings" class="sidebar-link">
+          <a href="/settings" class="sidebar-link settings-link">
             <img src="/static/img/cogwheel.png" alt="Settings" class="sidebar-icon" />
             <span>Settings</span>
           </a>
@@ -58,6 +73,7 @@
       </ul>
     </nav>
   </aside>
+
 
   <main class="main-content"> 
 {% if user and user.role == 'mentor' %}

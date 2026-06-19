@@ -265,9 +265,9 @@ def matching_formation(request: Request):
     
     user_data = db.get_user_by_id(user_id)
     role = user_data.get("role")
-
+    
     if role == "curator":
-        return templates.TemplateResponse(request, "group_formation.html")
+        return templates.TemplateResponse(request, "group_formation.html", context={"user": user_data})
     elif role == "mentee" or role == "mentee":
         return RedirectResponse(url=f"/profile", status_code=303)
     
@@ -298,7 +298,7 @@ async def api_group_formation(
         max_size=max_size,
         experience_level=experience_level
     )
-
+    
     return JSONResponse(
         status_code=200 if success else 500,
         content={"message": message}
