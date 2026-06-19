@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MMMatch — Create Group</title>
+  <meta name="description" content="Create a new mentoring group on MMMatch." />
+  <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body class="registration-page">
+
+<header>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <img src="/static/img/logo.png" alt="MMMatch" width="60" height="60" />
+        MMMatch
+      </a>
+      <div class="nav-actions">
+        <a href="/login" class="btn btn-primary">Log in</a>
+        <a href="/registration" class="btn btn-ghost">Sign up</a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<main class="registration-main">
+  <div class="registration-container">
+    <div class="registration-header">
+      <h1>Create a Group</h1>
+      <p>Set up a new mentoring match and define its goals, capacity, and experience requirements</p>
+    </div>
+
+    <div class="form-card">
+      <h2>Matching Formation</h2>
+      <form id="create-group-form">
+
+        <div class="form-group">
+          <input type="text" name="name" placeholder="Group Name" required />
+        </div>
+
+        <div class="form-group">
+          <textarea name="description" placeholder="Description" rows="3" style="width:100%;padding:0.75rem 1rem;border-radius:0.5rem;border:1.5px solid var(--color-border,#d4d1ca);background:var(--color-bg,#f7f6f2);font:inherit;font-size:var(--text-sm,0.9rem);color:inherit;resize:vertical;outline:none;transition:border-color 180ms ease,box-shadow 180ms ease;" onfocus="this.style.borderColor='var(--color-primary,#01696f)'" onblur="this.style.borderColor='var(--color-border,#d4d1ca)'"></textarea>
+        </div>
+
+        <div class="form-group">
+            <select
+                name="mentor"
+                id="mentor-select"
+                required
+                style="width:100%;padding:0.75rem 1rem;border-radius:0.5rem;border:1.5px solid var(--color-border,#d4d1ca);background:var(--color-bg,#f7f6f2);font:inherit;font-size:var(--text-sm,0.9rem);color:inherit;appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%237a7974\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 0.75rem center;padding-right:2.5rem;outline:none;cursor:pointer;"
+            >
+                <option value="" disabled selected>Loading mentors...</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+          <select name="program_type" required style="width:100%;padding:0.75rem 1rem;border-radius:0.5rem;border:1.5px solid var(--color-border,#d4d1ca);background:var(--color-bg,#f7f6f2);font:inherit;font-size:var(--text-sm,0.9rem);color:inherit;appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%237a7974\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 0.75rem center;padding-right:2.5rem;outline:none;cursor:pointer;">
+            <option value="" disabled selected>Select Program Type</option>
+            <option value="research">Research</option>
+            <option value="skills">Skills Development</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <input type="number" name="max_size" placeholder="Max Group Size (2–20)" min="2" max="20" required />
+        </div>
+
+        <div class="form-group">
+          <select name="experience_level" required style="width:100%;padding:0.75rem 1rem;border-radius:0.5rem;border:1.5px solid var(--color-border,#d4d1ca);background:var(--color-bg,#f7f6f2);font:inherit;font-size:var(--text-sm,0.9rem);color:inherit;appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%237a7974\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 0.75rem center;padding-right:2.5rem;outline:none;cursor:pointer;">
+            <option value="" disabled selected>Select Experience Level</option>
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+            <option value="mixed">Mixed</option>
+          </select>
+        </div>
+
+        <button type="submit" class="submit-btn">Create Group</button>
+
+        <div class="form-footer">
+          Want to manage existing groups? <a href="/dashboard">Go to Dashboard</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <img src="/static/img/full_icon.png" alt="Mentee &amp; Mentor Match" />
+    </div>
+
+    <div class="footer-info">
+      <div class="footer-info-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+          <circle cx="12" cy="10" r="3"/>
+        </svg>
+        <span>X street, city Zaporizhzhia, Ukraine</span>
+      </div>
+      <div class="footer-info-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+        <a href="mailto:vyshnevetskiyvolodymyr@gmail.com">vyshnevetskiyvolodymyr@gmail.com</a>
+      </div>
+      <div class="footer-info-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.68h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+        <span>+38 (063) 7597571</span>
+      </div>
+    </div>
+
+    <div class="footer-social">
+      <a href="#" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+        </svg>
+      </a>
+      <a href="#" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4V9h4v2a6 6 0 0 1 2-3z"/>
+          <rect x="2" y="9" width="4" height="12"/>
+          <circle cx="4" cy="4" r="2"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <span>©2026 MMMatch All rights reserved.</span>
+    <div class="footer-links">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of use</a>
+      <a href="#">Sitemap</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+
+
+const form = document.getElementById('create-group-form');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const formData = new FormData(form);
+
+  const response = await fetch('/api/matching_formation', {
+    method: 'POST',
+    body: formData
+  });
+
+  if (response.redirected) {
+    window.location.href = response.url;
+    return;
+  }
+
+  const result = await response.json();
+  console.log(result);
+});
+</script>
+
+<script>
+async function loadMentors() {
+  try {
+    const response = await fetch('/api/mentors');
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch mentors');
+    }
+
+    const data = await response.json();
+
+    const mentorSelect = document.getElementById('mentor-select');
+
+    mentorSelect.innerHTML =
+      '<option value="" disabled selected>Select a Mentor</option>';
+
+    data.mentors.forEach(mentor => {
+      const option = document.createElement('option');
+
+      // mentor_id will be submitted with the form
+      option.value = mentor.mentor_id;
+
+      // User-friendly display text
+      option.textContent =
+        `${mentor.name} (${mentor.field_of_expertise}) - ${mentor.university}`;
+
+      mentorSelect.appendChild(option);
+    });
+  } catch (error) {
+    console.error(error);
+
+    const mentorSelect = document.getElementById('mentor-select');
+    mentorSelect.innerHTML =
+      '<option value="" disabled selected>Unable to load mentors</option>';
+  }
+}
+
+loadMentors();
+</script>
+
+</body>
+</html>

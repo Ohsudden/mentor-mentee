@@ -39,6 +39,7 @@ class Database:
                     field_of_expertise VARCHAR,
                     experience VARCHAR,
                     max_groups INTEGER,
+                    university VARCHAR,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE
                 )
@@ -93,15 +94,23 @@ class Database:
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS Matching (
                     group_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    mentor_id INTEGER NOT NULL,
-                    name VARCHAR,
+                    curator_id INTEGER NOT NULL,
+                    mentor_id INTEGER,
+                    name VARCHAR NOT NULL,
                     description VARCHAR,
                     program_type TEXT,
                     max_size INTEGER,
                     experience_level VARCHAR,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (mentor_id) REFERENCES Mentor_profile(mentor_id) ON DELETE CASCADE
-                )
+
+                FOREIGN KEY (curator_id)
+                    REFERENCES Curator_profile(curator_id)
+                    ON DELETE CASCADE,
+
+                FOREIGN KEY (mentor_id)
+                    REFERENCES Mentor_profile(mentor_id)
+                    ON DELETE SET NULL
+        );
             ''')
             
             cursor.execute('''
@@ -143,6 +152,16 @@ class Database:
                     FOREIGN KEY (mentor_id) REFERENCES Mentor_profile(mentor_id) ON DELETE CASCADE,
                     FOREIGN KEY (mentee_id) REFERENCES Mentee_profile(mentee_id) ON DELETE CASCADE
                 )
+            ''')
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS Curator_profile (
+                    curator_id INTEGER PRIMARY KEY,
+                    user_id INTEGER UNIQUE NOT NULL,
+                    department VARCHAR,
+                    university VARCHAR,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE
+                );
             ''')
             
             conn.commit()
@@ -237,14 +256,14 @@ class Database:
         finally:
             conn.close()
 
-    def fill_mentor_profile(self, user_id, field_of_expertise, experience, max_groups):
+    def fill_mentor_profile(self, user_id, field_of_expertise, experience, max_groups, university):
         conn = self.connect()
         cursor = conn.cursor()
         try:
             cursor.execute('''
-                INSERT INTO Mentor_profile (user_id, field_of_expertise, experience, max_groups)
-                VALUES (?, ?, ?, ?)
-            ''', (user_id, field_of_expertise, experience, max_groups))
+                INSERT INTO Mentor_profile (user_id, field_of_expertise, experience, max_groups, university)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (user_id, field_of_expertise, experience, max_groups, university))
             conn.commit()
             return True, "Mentor profile created successfully"
         except sqlite3.Error as e:
@@ -254,14 +273,14 @@ class Database:
         finally:
             conn.close()
 
-    def fill_mentee_profile(self, user_id, skills, domain_of_study, favourable_program_type, experience_level, research_goals, short_term_goals, long_term_goals, mentor_expectations):
+    def fill_mentee_profile(self, user_id, skills, domain_of_study, favourable_program_type, experience_level, research_goals, short_term_goals, long_term_goals, mentor_expectations, university):
         conn = self.connect()
         cursor = conn.cursor()
         try:
             cursor.execute('''
-                INSERT INTO Mentee_profile (user_id, skills, domain_of_study, favourable_program_type, experience_level, research_goals, short_term_goals, long_term_goals, mentor_expectations)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (user_id, skills, domain_of_study, favourable_program_type, experience_level, research_goals, short_term_goals, long_term_goals, mentor_expectations))
+                INSERT INTO Mentee_profile (user_id, skills, domain_of_study, favourable_program_type, experience_level, research_goals, short_term_goals, long_term_goals, mentor_expectations, university)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (user_id, skills, domain_of_study, favourable_program_type, experience_level, research_goals, short_term_goals, long_term_goals, mentor_expectations, university))
             conn.commit()
             return True, "Mentee profile created successfully"
         except sqlite3.Error as e:
@@ -378,5 +397,184 @@ class Database:
             print(f"Error removing availability: {e}")
             conn.rollback()
             return False, "Error removing availability"
+        finally:
+            conn.close()
+
+    def fill_curator_profile(self, user_id, department, university):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                INSERT INTO Curator_profile (user_id, department, university)
+                VALUES (?, ?, ?)
+            ''', (user_id, department, university))
+            conn.commit()
+            return True, "Curator profile created successfully"
+        except sqlite3.Error as e:
+            print(f"Error creating curator profile: {e}")
+            conn.rollback()
+            return False, "Error creating curator profile"
+        finally:
+            conn.close()
+
+    def assign_mentee_to_matching(self, mentee_id, group_id):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                INSERT INTO Matching_mentee (mentee_id, group_id)
+                VALUES (?, ?)
+            ''', (mentee_id, group_id))
+            conn.commit()
+            return True, "Mentee assigned to matching successfully"
+        except sqlite3.Error as e:
+            print(f"Error assigning mentee to matching: {e}")
+            conn.rollback()
+            return False, "Error assigning mentee to matching"
+        
+    def create_group(
+            self,
+            curator_id,
+            mentor_id,
+            name,
+            description,
+            program_type,
+            max_size,
+            experience_level):
+
+        conn = self.connect()
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute("""
+                INSERT INTO Matching
+                (curator_id, mentor_id, name, description,
+                program_type, max_size, experience_level)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (
+                curator_id,
+                mentor_id,
+                name,
+                description,
+                program_type,
+                max_size,
+                experience_level
+            ))
+
+            conn.commit()
+            return True, "Group created successfully"
+
+        except sqlite3.Error as e:
+            conn.rollback()
+            return False, str(e)
+
+        finally:
+            conn.close()
+
+    def get_mentors(self):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                SELECT m.mentor_id, u.name, u.email, m.field_of_expertise, m.experience, m.max_groups, m.university
+                FROM Mentor_profile m
+                JOIN User u ON m.user_id = u.user_id
+            ''')
+            rows = cursor.fetchall()
+            mentors = []
+            for row in rows:
+                mentors.append({
+                    "mentor_id": row[0],
+                    "name": row[1],
+                    "email": row[2],
+                    "field_of_expertise": row[3],
+                    "experience": row[4],
+                    "max_groups": row[5],
+                    "university": row[6]
+                })
+            return mentors
+        except sqlite3.Error as e:
+            print(f"Error fetching mentors: {e}")
+            return []
+        finally:
+            conn.close()
+
+    def get_current_curator(self, user_id):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                SELECT curator_id FROM Curator_profile WHERE user_id = ?
+            ''', (user_id,))
+            row = cursor.fetchone()
+            if row:
+                return row[0]
+            else:
+                return None
+        except sqlite3.Error as e:
+            print(f"Error fetching curator: {e}")
+            return None
+        finally:
+            conn.close()
+
+    def get_current_groups(self, curator_id):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                SELECT group_id, name, description, program_type, max_size, experience_level
+                FROM Matching
+                WHERE curator_id = ?
+            ''', (curator_id,))
+            rows = cursor.fetchall()
+            groups = []
+            for row in rows:
+                groups.append({
+                    "group_id": row[0],
+                    "name": row[1],
+                    "description": row[2],
+                    "program_type": row[3],
+                    "max_size": row[4],
+                    "experience_level": row[5]
+                })
+            return groups
+        except sqlite3.Error as e:
+            print(f"Error fetching groups: {e}")
+            return []
+        finally:
+            conn.close()
+        
+    def delete_group(self, group_id):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('DELETE FROM Matching WHERE group_id = ?', (group_id,))
+            conn.commit()
+
+            if cursor.rowcount == 0:        
+                return False, "Group not found"
+
+            return True, "Group deleted successfully"
+        except sqlite3.Error as e:
+            conn.rollback()
+            return False, f"Error deleting group: {e}"
+        finally:
+            conn.close()
+        
+    def change_group(self, group_id, name, description, program_type, max_size, experience_level):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                UPDATE Matching
+                SET name = ?, description = ?, program_type = ?, max_size = ?, experience_level = ?
+                WHERE group_id = ?
+            ''', (name, description, program_type, max_size, experience_level, group_id))
+            conn.commit()
+            return True, "Group updated successfully"
+        except sqlite3.Error as e:
+            print(f"Error updating group: {e}")
+            conn.rollback()
+            return False, "Error updating group"
         finally:
             conn.close()

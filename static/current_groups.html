@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MMMatch — Settings</title>
+  <meta name="description" content="Manage your MMMatch account settings." />
+  <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+
+<style> 
+    .groups-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.group-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #eee;
+}
+
+.group-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.12);
+}
+
+.group-header h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.group-body p {
+  margin: 6px 0;
+  font-size: 14px;
+  color: #444;
+}
+
+.group-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.btn-edit {
+  background: #4f46e5;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-delete {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-edit:hover { background: #4338ca; }
+.btn-delete:hover { background: #dc2626; }
+</style>
+<body class="dashboard-page">
+
+<header>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <img src="/static/img/logo.png" alt="MMMatch" width="60" height="60" />
+        MMMatch
+      </a>
+    </div>
+  </nav>
+</header>
+
+<div class="dashboard-wrapper">
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+      <ul class="sidebar-menu">
+        <li class="sidebar-item">
+          <a href="#" class="sidebar-link">
+            <img src="/static/img/calendar.png" alt="Results" class="sidebar-icon" />
+            <span>Results of matchmaking</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          
+          {% if user.role == "curator" %}
+          <a href="/matching_formation" class="sidebar-link">
+                        <img src="/static/img/group.png" alt="Matches" class="sidebar-icon" />
+              <span>Matching Formation</span>
+          </a>
+      {% else %}
+          <a href="/previous_matches" class="sidebar-link">
+                        <img src="/static/img/group.png" alt="Matches" class="sidebar-icon" />
+              <span>Previous Matches</span>
+          </a>
+{% endif %}
+        </li>
+        
+        <li class="sidebar-item">
+            {% if user.role == "curator" %}
+      <a href="/current_groups" class="sidebar-link">
+                  <img src="/static/img/questionnaire.png" alt="Questionnaire" class="sidebar-icon" />
+                  <span>My current groups</span>
+                </a>
+            {% else %}
+          <a href="/questionnaire" class="sidebar-link">
+            <img src="/static/img/questionnaire.png" alt="Questionnaire" class="sidebar-icon" />
+            <span>Questionnaire</span>
+          </a>
+          {% endif %}
+        </li>
+        <li class="sidebar-item">
+          <a href="/profile" class="sidebar-link">
+            <img src="/static/img/profile.png" alt="Profile" class="sidebar-icon" />
+            <span>Profile</span>
+          </a>
+        <li class="sidebar-item">
+          <a href="/settings" class="sidebar-link active settings-link">
+            <img src="/static/img/cogwheel.png" alt="Settings" class="sidebar-icon" />
+            <span>Settings</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <div class="settings-container">
+      <h1>My Current Groups</h1>
+      <p>View and manage the mentoring groups you are currently overseeing.</p>
+
+      <div id="groups-list" class="groups-list">
+        
+      </div>
+    </div>
+  </main>
+</div>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <img src="/static/img/full_icon.png" alt="Mentee & Mentor Match" />
+    </div>
+
+    <div class="footer-info">
+      <div class="footer-info-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span>X street, city Zaporizhzhia, Ukraine</span>
+      </div>
+      <div class="footer-info-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <a href="mailto:vyshnevetskiyvolodymyr@gmail.com">vyshnevetskiyvolodymyr@gmail.com</a>
+      </div>
+      <div class="footer-info-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.68h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <span>+38 (093) 0083771/571</span>
+      </div>
+    </div>
+
+    <div class="footer-social">
+      <a href="#" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+      </a>
+      <a href="#" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4V9h4v2a6 6 0 0 1 2-3z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <span>©2026 MMMatch All rights reserved.</span>
+    <div class="footer-links">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of use</a>
+      <a href="#">Sitemap</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+function get_current_groups() {
+  fetch('/api/current_groups')
+    .then(response => response.json())
+    .then(data => {
+      const groupsList = document.getElementById('groups-list');
+      groupsList.innerHTML = '';
+
+      if (data.groups.length === 0) {
+        groupsList.innerHTML = '<p>You are not currently overseeing any groups.</p>';
+        return;
+      }
+
+data.groups.forEach(group => {
+  const groupItem = document.createElement('div'); // ✅ FIX
+  groupItem.innerHTML = `
+    <div class="group-card">
+      <div class="group-header">
+        <h3>${group.name}</h3>
+      </div>
+
+      <div class="group-body">
+        <p>${group.description}</p>
+        <p><strong>Mentor:</strong> ${group.mentor_name}</p>
+        <p><strong>Program Type:</strong> ${group.program_type}</p>
+        <p><strong>Experience Level:</strong> ${group.experience_level}</p>
+        <p><strong>Current Size:</strong> ${group.current_size}/${group.max_size}</p>
+      </div>
+
+      <div class="group-actions">
+        <button class="btn-edit"
+  onclick="openEditGroup(${group.group_id}, '${group.name}', '${group.description}', '${group.program_type}', ${group.max_size}, '${group.experience_level}')"> Edit </button>
+<button class="btn-delete" onclick="deleteGroup(${group.group_id})">
+          Delete
+        </button>
+      </div>
+    </div>
+  `;
+
+  groupsList.appendChild(groupItem);
+});
+    })
+    .catch(error => {
+      console.error('Error fetching current groups:', error);
+      const groupsList = document.getElementById('groups-list');
+      groupsList.innerHTML = '<p>Error loading current groups. Please try again later.</p>';
+    });
+}
+document.addEventListener('DOMContentLoaded', get_current_groups);
+
+function deleteGroup(groupId) {
+  if (!groupId) {
+    alert("Invalid group id");
+    return;
+  }
+
+  if (!confirm("Are you sure you want to delete this group?")) return;
+
+  fetch('/api/remove_group', {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ group_id: groupId })
+  })
+  .then(async res => {
+    const text = await res.text(); 
+
+    try {
+      const data = JSON.parse(text);
+      alert(data.message);
+    } catch (e) {
+      console.error("Non-JSON response:", text);
+      alert("Server error: check backend logs");
+    }
+
+    get_current_groups();
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Request failed");
+  });
+}
+
+function openEditGroup(id, name, description, program_type, max_size, experience_level) {
+  const newName = prompt("Group name:", name);
+  const newDesc = prompt("Description:", description);
+  const newProgram = prompt("Program type:", program_type);
+  const newMaxSize = prompt("Max size:", max_size);
+  const newLevel = prompt("Experience level:", experience_level);
+
+  if (!newName) return;
+
+  fetch('/api/change_group', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      group_id: id,
+      name: newName,
+      description: newDesc,
+      program_type: newProgram,
+      max_size: parseInt(newMaxSize),
+      experience_level: newLevel
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.message);
+    get_current_groups();
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Failed to update group");
+  });
+}
+</script>
+
+</body>
+</html>

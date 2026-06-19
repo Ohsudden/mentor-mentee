@@ -164,15 +164,15 @@ async def submit_questionnaire(request: Request):
         body = await request.json()           
         user_id = request.session.get("user_id")
         db.questionnaire_submission(
-            user_id,
-            body.get("papers_read"),
-            body.get("lit_review"),
-            body.get("meeting_frequency"),
-            body.get("communication_abilities"),
-            body.get("research_tool_skill"),
-            body.get("deadline_management"),
-            body.get("domain_knowledge")
-        )
+    user_id,
+    body.get("papers_read_plan"),
+    body.get("lit_review_confidence"),
+    body.get("meeting_frequency"),
+    body.get("communication_abilities"),
+    body.get("research_tool_skill"),
+    body.get("deadline_management"),
+    body.get("domain_knowledge")
+)
     return JSONResponse(status_code=200, content={"message": "Questionnaire submitted successfully"})
 
 @app.get("/profile", response_class=HTMLResponse)
@@ -193,13 +193,21 @@ async def update_profile(request: Request):
     body = await request.json()
     if request.session.get("user_role") == "mentor":
         db.fill_mentor_profile(
+        user_id,
+        body.get("expertise"),
+        body.get("experience"),
+        body.get("max_groups"),
+        body.get("university")
+    )
+
+    elif request.session.get("user_role") == "curator":
+        db.fill_curator_profile(
             user_id,
-            body.get("experience"),   
-            body.get("expertise"),
-            body.get("max_groups")     
+            body.get("department"),
+            body.get("university")
         )
     elif request.session.get("user_role") == "mentee":
-        db.fill_mentee_profile(user_id, body.get("skills"), body.get("domain_of_knowledge"), body.get("favourable_program_type"), body.get("experience_level"), body.get("research_goals"), body.get("short_term_goals"), body.get("long_term_goals"), body.get("mentor_expectations"))
+        db.fill_mentee_profile(user_id, body.get("skills"), body.get("domain_of_knowledge"), body.get("favourable_program_type"), body.get("experience_level"), body.get("research_goals"), body.get("short_term_goals"), body.get("long_term_goals"), body.get("mentor_expectations"), body.get("university"))
 
 @app.get("/login", response_class=HTMLResponse)
 async def login(request: Request):
@@ -247,3 +255,136 @@ def session_info(request: Request):
         "user_email": request.session.get("user_email"),
         "user_role": request.session.get("user_role"),
     }
+
+
+@app.get("/matching_formation")
+def matching_formation(request: Request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return JSONResponse(status_code=401, content={"message": "Unauthorized"})
+    
+    user_data = db.get_user_by_id(user_id)
+    role = user_data.get("role")
+
+    if role == "curator":
+        return templates.TemplateResponse(request, "group_formation.html")
+    elif role == "mentee" or role == "mentee":
+        return RedirectResponse(url=f"/profile", status_code=303)
+    
+@app.post("/api/matching_formation")
+async def api_group_formation(
+    request: Request,
+    mentor: int = Form(...),
+    name: str = Form(...),
+    description: str = Form(""),
+    program_type: str = Form(...),
+    max_size: int = Form(...),
+    experience_level: str = Form(...)
+):
+    user_id = request.session.get("user_id")
+
+    if not user_id:
+        return JSONResponse(
+            status_code=401,
+            content={"message": "Unauthorized"}
+        )
+    curator_data = db.get_current_curator(user_id)
+    success, message = db.create_group(
+        curator_id=curator_data,
+        mentor_id=mentor,
+        name=name,
+        description=description,
+        program_type=program_type,
+        max_size=max_size,
+        experience_level=experience_level
+    )
+
+    return JSONResponse(
+        status_code=200 if success else 500,
+        content={"message": message}
+    )
+
+@app.post("/api/assign_mentor")
+async def api_assign_mentor(request: Request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return JSONResponse(status_code=401, content={"message": "Unauthorized"})
+    
+    body = await request.json()
+    db.assign_mentor_to_group(body.get("group_id"), body.get("mentor_id"))
+    return JSONResponse(status_code=200, content={"message": "Mentor assigned successfully"})
+
+@app.get("/api/mentors")
+async def api_get_mentors(request: Request):
+    mentors = db.get_mentors()
+    return JSONResponse(status_code=200, content={"mentors": mentors})
+
+@app.get("/current_groups", response_class=HTMLResponse)
+def current_groups(request: Request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return RedirectResponse(url="/login", status_code=303)
+    user_data = db.get_user_by_id(user_id)
+    return templates.TemplateResponse(request, "current_groups.html", {"user": user_data})
+
+@app.get("/api/current_groups")
+async def get_current_groups(request: Request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return JSONResponse(status_code=401, content={"message": "Unauthorized"})
+    curator_data = db.get_current_curator(user_id)
+
+    groups = db.get_current_groups(curator_data)
+    return JSONResponse(status_code=200, content={"groups": groups})
+
+@app.delete("/api/remove_group")
+async def remove_group(request: Request):
+    try:
+        user_id = request.session.get("user_id")
+        if not user_id:
+            return JSONResponse(status_code=401, content={"message": "Unauthorized"})
+
+        body = await request.json()
+        group_id = body.get("group_id")
+
+        if not group_id:
+            return JSONResponse(status_code=400, content={"message": "group_id missing"})
+
+        group_id = int(group_id)  
+
+        success, msg = db.delete_group(group_id)
+        if not success:
+            return JSONResponse(status_code=500, content={"message": msg})
+
+        return JSONResponse(status_code=200, content={"message": "Group removed successfully"})
+
+    except (ValueError, TypeError):
+        return JSONResponse(status_code=400, content={"message": "Invalid group_id"})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"message": str(e)})
+    
+@app.post("/api/change_group")
+async def change_group(request: Request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return JSONResponse(status_code=401, content={"message": "Unauthorized"})
+
+    body = await request.json()
+    group_id = body.get("group_id")
+    if not group_id:
+        return JSONResponse(status_code=400, content={"message": "group_id missing"})
+
+    group_id = int(group_id) 
+
+    success, msg = db.change_group(
+        group_id=group_id,
+        name=body.get("name"),
+        description=body.get("description"),
+        program_type=body.get("program_type"),
+        max_size=body.get("max_size"),
+        experience_level=body.get("experience_level")
+    )
+
+    if not success:
+        return JSONResponse(status_code=500, content={"message": msg})
+    return {"message": "Group updated successfully"}

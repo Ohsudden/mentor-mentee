@@ -102,6 +102,29 @@
       />
     </div>
   </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for="university">University</label>
+      <input
+        type="text"
+        id="university"
+        name="university"
+        placeholder="Your university"
+        value="{{ user.university if user else '' }}"
+      />
+    </div>
+  </div>
+</div>
+
+{% elif user and user.role == 'mentee' %}
+
+<div class="profile-section">
+        placeholder="Number of mentee groups"
+        value="{{ user.max_groups if user else '' }}"
+      />
+    </div>
+  </div>
 </div>
 
 {% elif user and user.role == 'mentee' %}
@@ -201,12 +224,68 @@
       >{{ user.mentor_expectations if user else '' }}</textarea>
     </div>
   </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for="university">University</label>
+      <input
+        type="text"
+        id="university"
+        name="university"
+        placeholder="Your university"
+        value="{{ user.university if user else '' }}"
+      />
+    </div>
+  </div>
+</div>
+
+{% elif user and user.role == 'curator' %}
+
+<div class="profile-section">
+  <h2 class="profile-section-title">Curator Profile</h2>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for="department">Department</label>
+      <input
+        type="text"
+        id="department"
+        name="department"
+        placeholder="Computer Science, Biology, Engineering..."
+        value="{{ user.department if user else '' }}"
+      />
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for="organization">Organization</label>
+      <input
+        type="text"
+        id="organization"
+        name="organization"
+        placeholder="University or institution"
+        value="{{ user.organization if user else '' }}"
+      />
+    </div>
+  </div>
+
 </div>
 
 {% endif %}
 
+
+
 <button type="button" class="submit-btn"
-  onclick="{% if user.role == 'mentor' %}send_mentor_profile(){% else %}send_mentee_profile(){% endif %}">
+onclick="
+{% if user.role == 'mentor' %}
+send_mentor_profile()
+{% elif user.role == 'curator' %}
+send_curator_profile()
+{% else %}
+send_mentee_profile()
+{% endif %}
+">
   Save Profile
 </button>
 </main> 
@@ -258,6 +337,7 @@ function send_mentee_profile() {
     domain_of_knowledge: document.getElementById('domain_of_knowledge').value,
     favourable_program_type: document.getElementById('favourable_program_type').value,
     experience_level: document.getElementById('experience_level').value,
+    university: document.getElementById('university').value,
     research_goals: document.getElementById('research_goals').value,
     short_term_goals: document.getElementById('short_term_goals').value,
     long_term_goals: document.getElementById('long_term_goals').value,
@@ -282,7 +362,8 @@ function send_mentor_profile() {
   const profileData = {
     experience: document.getElementById('experience').value,
     expertise: document.getElementById('expertise').value,
-    max_groups: document.getElementById('max-groups').value
+    max_groups: document.getElementById('max-groups').value,
+    university: document.getElementById('university').value
     };
     return fetch('/api/profile', {
       method: 'POST',
@@ -298,6 +379,32 @@ function send_mentor_profile() {
       console.error('Error:', error);
       alert('Error saving profile.');
     });
+}
+
+function send_curator_profile() {
+  const profileData = {
+    department: document.getElementById('department').value,
+    organization: document.getElementById('organization').value,
+    };
+
+  return fetch('/api/profile', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(profileData)
+  })
+  .then(response => {
+    if (response.ok) {
+      alert('Profile saved successfully!');
+    } else {
+      alert('Error saving profile.');
+    }
+  })
+  .catch(error => {
+    console.error(error);
+    alert('Error saving profile.');
+  });
 }
 </script>
 </body>
