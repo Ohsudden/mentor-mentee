@@ -1,15 +1,19 @@
 import sqlite3
 from datetime import datetime
 from pwdlib import PasswordHash
+import sqlite_vec
 
 class Database:
     def __init__(self, db_name='mentor_mentee.db'):
         self.db_name = db_name
         self.db_path = 'E:\mentor-mentee\mentor_mentee.db'
+    
     def connect(self):
-            conn = sqlite3.connect(self.db_path)
-            conn.row_factory = sqlite3.Row
-            return conn
+        conn = sqlite3.connect(self.db_path)
+        conn.enable_load_extension(True)
+        sqlite_vec.load(conn)
+        conn.row_factory = sqlite3.Row
+        return conn
 
     
     def create_tables(self):
@@ -135,7 +139,6 @@ class Database:
                 )
             ''')
             
-            # Create Feedback table
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS Feedback (
                     feedback_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -163,7 +166,22 @@ class Database:
                     FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE
                 );
             ''')
-            
+                
+            cursor.execute('''
+                CREATE VIRTUAL TABLE Matching_embeddings USING vec0(
+                    group_id INTEGER PRIMARY KEY,
+                    description_emb FLOAT[1536]
+                );
+            ''')    
+            # combined_profile_emb is based on the mentee's skills, short_term_goals, long_term_goals, and mentor_expectations. 
+            # domain_of_study_emb is based on the mentee's domain_of_study.
+            cursor.execute('''
+                CREATE VIRTUAL TABLE Mentee_embeddings USING vec0(
+                mentee_id INTEGER PRIMARY KEY,
+                combined_profile_emb FLOAT[1536], 
+                domain_of_study_emb FLOAT[1536],
+            ); 
+            ''')                              
             conn.commit()
             print("Database tables created successfully!")
             
