@@ -11,6 +11,9 @@ import requests
 from dotenv import load_dotenv
 from phoenix.client import Client
 from database import Database
+from llm_integration import LLMIntegration
+
+llm = LLMIntegration()
 
 class RegisterRequest(BaseModel):
     name: str
@@ -207,7 +210,43 @@ async def update_profile(request: Request):
             body.get("university")
         )
     elif request.session.get("user_role") == "mentee":
-        db.fill_mentee_profile(user_id, body.get("skills"), body.get("domain_of_knowledge"), body.get("favourable_program_type"), body.get("experience_level"), body.get("research_goals"), body.get("short_term_goals"), body.get("long_term_goals"), body.get("mentor_expectations"), body.get("university"))
+        prompt = f"""
+        You are an AI assistant that evaluates a mentee's professional experience.
+
+        ## Task
+        Analyze the provided work experience and determine the mentee's experience level.
+
+        ## Instructions
+        1. Carefully read the entire work experience.
+        2. Identify the technologies, responsibilities, years of experience, project complexity, and achievements.
+        3. Reason about the overall level before producing the final answer.
+        4. Return only a valid JSON object matching the schema below.
+
+        ## Experience
+        {body.get("experience_text")}
+
+        ## Output schema
+        {{
+            "level": "<beginner|intermediate|advanced>",
+            "summary": "<concise professional summary highlighting key skills, relevant experience, and notable achievements>"
+        }}
+
+        ## Example
+
+        Input:
+        "Completed several university projects using Python and Java. Built a personal web application with Flask. No commercial experience."
+
+        Output:
+        {{
+            "level": "beginner",
+            "summary": "Entry-level developer with experience in Python and Java through academic and personal projects. Familiar with Flask and foundational software development practices."
+        }}
+
+        Take time to analyze the experience before deciding the level.
+        Ensure the output is valid JSON and contains no additional text.
+        """
+        experience_text = llm.get_working_experience(prompt)
+        db.fill_mentee_profile(user_id, body.get("skills"), body.get("domain_of_knowledge"), body.get("favourable_program_type"), experience_text, body.get("experience_level"), body.get("research_goals"), body.get("short_term_goals"), body.get("long_term_goals"), body.get("mentor_expectations"), body.get("university"))
 
 @app.get("/login", response_class=HTMLResponse)
 async def login(request: Request):

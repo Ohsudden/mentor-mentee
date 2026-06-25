@@ -56,7 +56,8 @@ class Database:
                     skills VARCHAR,
                     domain_of_study VARCHAR,
                     favourable_program_type VARCHAR,
-                    experience_level VARCHAR,
+                    experience_level TEXT CHECK(experience_level IN ('beginner', 'intermediate', 'advanced')),
+                    experience_text VARCHAR,
                     research_goals VARCHAR,
                     short_term_goals VARCHAR,
                     long_term_goals VARCHAR,
@@ -291,14 +292,14 @@ class Database:
         finally:
             conn.close()
 
-    def fill_mentee_profile(self, user_id, skills, domain_of_study, favourable_program_type, experience_level, research_goals, short_term_goals, long_term_goals, mentor_expectations, university):
+    def fill_mentee_profile(self, user_id, skills, domain_of_study, favourable_program_type, experience_level, experience_text, research_goals, short_term_goals, long_term_goals, mentor_expectations, university):
         conn = self.connect()
         cursor = conn.cursor()
         try:
             cursor.execute('''
-                INSERT INTO Mentee_profile (user_id, skills, domain_of_study, favourable_program_type, experience_level, research_goals, short_term_goals, long_term_goals, mentor_expectations, university)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (user_id, skills, domain_of_study, favourable_program_type, experience_level, research_goals, short_term_goals, long_term_goals, mentor_expectations, university))
+                INSERT INTO Mentee_profile (user_id, skills, domain_of_study, favourable_program_type, experience_level, experience_text, research_goals, short_term_goals, long_term_goals, mentor_expectations, university)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (user_id, skills, domain_of_study, favourable_program_type, experience_level, experience_text, research_goals, short_term_goals, long_term_goals, mentor_expectations, university))
             conn.commit()
             return True, "Mentee profile created successfully"
         except sqlite3.Error as e:
