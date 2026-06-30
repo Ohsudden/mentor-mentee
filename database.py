@@ -62,6 +62,7 @@ class Database:
                     short_term_goals VARCHAR,
                     long_term_goals VARCHAR,
                     mentor_expectations VARCHAR,
+                    university VARCHAR,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE
                 )
@@ -266,6 +267,30 @@ class Database:
                 INSERT INTO User (name, email, password_hash, role, gender, age, education_level)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             ''', (name, email, password_hash, role, gender, age, education_level))
+            conn.commit()
+            return True, "User created successfully"
+        except sqlite3.Error as e:
+            print(f"Error creating user: {e}")
+            conn.rollback()
+            return False, "Error creating user"
+        finally:
+            conn.close()
+
+
+    def create_user_controlled(self, user_id, name, email, password, confirm_password, role, gender=None, age=None, education_level=None):
+        """Create a new user"""
+        if password != confirm_password:
+            return False, "Passwords do not match"
+        
+        password_hash = PasswordHash.recommended().hash(password)
+        
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                INSERT INTO User (user_id, name, email, password_hash, role, gender, age, education_level)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (user_id, name, email, password_hash, role, gender, age, education_level))
             conn.commit()
             return True, "User created successfully"
         except sqlite3.Error as e:
