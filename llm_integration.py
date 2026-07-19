@@ -157,12 +157,14 @@ class LLMIntegration:
         # Look for the first n_matches.
         
         # Step 1-2
+        print(f"Filtering candidates for group {group_id}...")
         candidates = self.filter_candidates(db, group_id)
 
         if not candidates:
             return []
 
         # Step 3-6
+        print(f"Retrieving embedding candidates for group {group_id}...")
         candidates = self.retrieve_embedding_candidates(
             db,
             group_id,
@@ -171,6 +173,7 @@ class LLMIntegration:
         )
 
         # Step 7
+        print(f"Diversifying candidates for group {group_id}...")
         diversified = self.diversify_candidates(
             db,
             candidates,
@@ -178,6 +181,7 @@ class LLMIntegration:
         )
 
         # Step 8-9
+        print(f"Ranking candidates by profile similarity for group {group_id}...")
         final = self.rank_by_profile_similarity(
             db,
             diversified,
@@ -186,12 +190,17 @@ class LLMIntegration:
 
         for i in final:
             success, message = db.add_mentee_to_group(group_id, i)
+            print(f"Adding mentee {i} to group {group_id}: {message}")
+            print(f"Success: {success}")
             if not success:
                 print(f"Skipping mentee {i}: {message}")
         return final
 
     def provide_matching_recommendations(self, db, group_id, n_matches=3):
-        return self.provide_recommendations(n_matches, db, group_id)
+        print(f"[MATCHING] provide_matching_recommendations(group_id={group_id}, n_matches={n_matches})")
+        recommendations = self.provide_recommendations(n_matches, db, group_id)
+        print(f"[MATCHING] recommendations={recommendations}")
+        return recommendations
 
 
 

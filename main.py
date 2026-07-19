@@ -476,6 +476,16 @@ async def run_matching(request: Request):
             return JSONResponse(status_code=400, content={"message": "group_id missing"})
         group_id = int(group_id)
         recommendations = llm.provide_matching_recommendations(db, group_id, n_matches)
+
+        if not recommendations:
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "message": "Matching completed, but no eligible mentees were found.",
+                    "recommendations": [],
+                }
+            )
+
         return JSONResponse(
             status_code=200,
             content={
@@ -494,8 +504,133 @@ async def previous_matches(request: Request):
         return JSONResponse(status_code=401, content={"message": "Unauthorized"})
 
     try:
-        matches = db.get_previous_matches(user_id)
-        return templates.TemplateResponse(request, "current_matched_groups.html", {"matches": matches})
+        user_data = db.get_user_by_id(user_id)
+        if not user_data or user_data.get("role") != "mentee":
+            return RedirectResponse(url="/profile", status_code=303)
+
+        mentee_id = db.get_mentee_id_by_user_id(user_id)
+        matches = db.get_previous_matches(mentee_id) if mentee_id else []
+        return templates.TemplateResponse(request, "previous_matches.html", {"user": user_data, "matches": matches})
     except Exception as e:
         print(f"[ERROR] fetching previous matches failed: {e}")
         return JSONResponse(status_code=500, content={"message": "Internal server error"})
+    
+@app.get("/previous_matches_data")
+async def previous_matches_data(request: Request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return JSONResponse(status_code=401, content={"message": "Unauthorized"})
+
+    try:
+        mentee_id = db.get_mentee_id_by_user_id(user_id)
+        matches = db.get_previous_matches(mentee_id) if mentee_id else []
+        return JSONResponse(status_code=200, content={"matches": matches})
+    except Exception as e:
+        print(f"[ERROR] fetching previous matches data failed: {e}")
+        return JSONResponse(status_code=500, content={"message": "Internal server error"})
+
+@app.get("/previous_groups_data")
+async def previous_groups_data(request: Request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return JSONResponse(
+            status_code=401,
+            content={"message": "Unauthorized"}
+        )
+
+    try:
+        mentee_id = db.get_mentee_id_by_user_id(user_id)
+
+        groups = db.get_previous_matches(mentee_id) if mentee_id else []
+
+        return JSONResponse(
+            status_code=200,
+            content={"groups": groups}
+        )
+
+    except Exception as e:
+        print(f"[ERROR] fetching previous groups failed: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"message": "Internal server error"}
+        )
+    
+@app.get("/feedback/{group_id}", response_class=HTMLResponse)
+def feedback_form(request: Request, group_id: int):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return RedirectResponse(url="/login", status_code=303)
+
+    user_data = db.get_user_by_id(user_id)
+    if not user_data or user_data.get("role") != "mentee":
+        return RedirectResponse(url="/profile", status_code=303)
+
+    mentee_id = db.get_mentee_id_by_user_id(user_id)
+    group = db.get_student_group_details(mentee_id, group_id) if mentee_id else None
+    if not group or group.get("status") != "finished":
+        return RedirectResponse(url="/previous_matches", status_code=303)
+
+    if group.get("has_feedback"):
+        return RedirectResponse(url="/previous_matches", status_code=303)
+
+    return templates.TemplateResponse(
+        request,
+        "feedback_base_form.html",
+        {
+            "user": user_data,
+            "group": group,
+        }
+    )
+
+@app.post("/api/feedback")
+async def submit_feedback(request: Request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return JSONResponse(status_code=401, content={"message": "Unauthorized"})
+
+    user_data = db.get_user_by_id(user_id)
+    if not user_data or user_data.get("role") != "mentee":
+        return JSONResponse(status_code=403, content={"message": "Only students can submit feedback"})
+
+    mentee_id = db.get_mentee_id_by_user_id(user_id)
+    if not mentee_id:
+        return JSONResponse(status_code=400, content={"message": "Mentee profile not found"})
+
+    body = await request.json()
+    group_id = body.get("group_id")
+    if not group_id:
+        return JSONResponse(status_code=400, content={"message": "group_id missing"})
+
+    try:
+        group_id = int(group_id)
+        group = db.get_student_group_details(mentee_id, group_id)
+        if not group:
+            return JSONResponse(status_code=404, content={"message": "Group not found"})
+        if group.get("status") != "finished":
+            return JSONResponse(status_code=400, content={"message": "Feedback is only available for completed groups"})
+        if group.get("has_feedback"):
+            return JSONResponse(status_code=400, content={"message": "Feedback already submitted for this group"})
+
+        compatibility = float(body.get("compatibility"))
+        responsiveness = float(body.get("responsiveness"))
+        relationship_quality = float(body.get("relationship_quality"))
+        rating_overall = float(body.get("rating_overall"))
+        comments = (body.get("comments") or "").strip()
+
+        success, message = db.submit_feedback(
+            group_id=group_id,
+            mentor_id=group["mentor_id"],
+            mentee_id=mentee_id,
+            compatibility=compatibility,
+            responsiveness=responsiveness,
+            relationship_quality=relationship_quality,
+            rating_overall=rating_overall,
+            comments=comments,
+        )
+
+        return JSONResponse(
+            status_code=200 if success else 500,
+            content={"message": message}
+        )
+    except (TypeError, ValueError):
+        return JSONResponse(status_code=400, content={"message": "Invalid feedback payload"})

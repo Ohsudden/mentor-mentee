@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MMMatch — Questionnaire</title>
-  <meta name="description" content="Complete your mentorship profile questionnaire." />
+  <title>MMMatch — Group Feedback</title>
+  <meta name="description" content="Submit feedback for a completed mentoring group." />
   <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/css/style.css" />
 </head>
@@ -56,9 +56,13 @@
   <main class="main-content">
     <div class="settings-container">
       <h1 class="settings-title">Group Feedback Form</h1>
+      {% if group %}
+      <p><strong>Group:</strong> {{ group.name }} | <strong>Mentor:</strong> {{ group.mentor_name or 'Not assigned' }} | <strong>Status:</strong> Completed</p>
+      {% endif %}
       
       <div class="settings-card questionnaire-card">
-        <form class="settings-form">
+        <form id="feedback-form" class="settings-form">
+          <input type="hidden" name="group_id" value="{{ group.group_id if group else '' }}" />
           
           <!-- COMPATIBILITY SECTION -->
           <div class="form-section">
@@ -235,6 +239,16 @@
             </div>
           </div>
 
+          <div class="form-section">
+            <h2 class="form-section-title">Additional Comments</h2>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="comments">Share any extra feedback about the group experience.</label>
+                <textarea id="comments" name="comments" rows="5" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #d1d5db; resize: vertical;"></textarea>
+              </div>
+            </div>
+          </div>
+
           <button type="submit" class="btn btn-primary" style="margin-top: var(--space-xl); width: 100%;">Submit Feedback</button>
         </form>
       </div>
@@ -282,6 +296,64 @@
     </div>
   </div>
 </footer>
+
+<script>
+  function getScore(prefix) {
+    const selected = [1, 2, 3]
+      .map((index) => document.querySelector(`input[name="${prefix}-${index}"]:checked`))
+      .filter(Boolean)
+      .map((input) => Number(input.value));
+
+    if (selected.length !== 3) {
+      return null;
+    }
+
+    return selected.reduce((sum, value) => sum + value, 0) / selected.length;
+  }
+
+  document.getElementById('feedback-form').addEventListener('submit', async function (event) {
+    event.preventDefault();
+
+    const groupId = this.querySelector('input[name="group_id"]').value;
+    const compatibility = getScore('compatibility');
+    const responsiveness = getScore('responsiveness');
+    const relationshipQuality = getScore('relationship');
+
+    if (!groupId) {
+      alert('Missing group information.');
+      return;
+    }
+
+    if (compatibility === null || responsiveness === null || relationshipQuality === null) {
+      alert('Please complete every rating before submitting feedback.');
+      return;
+    }
+
+    const ratingOverall = (compatibility + responsiveness + relationshipQuality) / 3;
+
+    const response = await fetch('/api/feedback', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        group_id: groupId,
+        compatibility,
+        responsiveness,
+        relationship_quality: relationshipQuality,
+        rating_overall: ratingOverall,
+        comments: document.getElementById('comments').value
+      })
+    });
+
+    const data = await response.json();
+    alert(data.message || 'Feedback submitted');
+
+    if (response.ok) {
+      window.location.href = '/previous_matches';
+    }
+  });
+</script>
 
 </body>
 </html>

@@ -893,27 +893,60 @@ class Database:
             row = cursor.fetchone()
             if row:
                 return row[0]
-            else:
-                return None
+            return None
         except sqlite3.Error as e:
             print(f"Error fetching curator ID: {e}")
             return None
         finally:
             conn.close()
 
-    def get_previous_matches(self, user_id):
+    def get_mentee_id_by_user_id(self, user_id):
         conn = self.connect()
         cursor = conn.cursor()
         try:
             cursor.execute('''
-                SELECT g.group_id, g.name, g.description, g.program_type, g.max_size, g.experience_level,
-                       u.name AS mentor_name, mp.field_of_expertise, mp.university AS mentor_university
+                SELECT mentee_id
+                FROM Mentee_profile
+                WHERE user_id = ?
+            ''', (user_id,))
+            row = cursor.fetchone()
+            if row:
+                return row[0]
+            return None
+        except sqlite3.Error as e:
+            print(f"Error fetching mentee ID: {e}")
+            return None
+        finally:
+            conn.close()
+
+    def get_previous_matches(self, mentee_id):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                SELECT g.group_id,
+                       g.name,
+                       g.description,
+                       g.program_type,
+                       g.max_size,
+                       g.experience_level,
+                       g.status,
+                       u.name AS mentor_name,
+                       mp.field_of_expertise,
+                       mp.university AS mentor_university,
+                       EXISTS(
+                           SELECT 1
+                           FROM Feedback f
+                           WHERE f.group_id = g.group_id AND f.mentee_id = mm.mentee_id
+                       ) AS has_feedback
                 FROM Matching_mentee mm
                 JOIN Matching g ON mm.group_id = g.group_id
                 LEFT JOIN Mentor_profile mp ON g.mentor_id = mp.mentor_id
                 LEFT JOIN User u ON mp.user_id = u.user_id
                 WHERE mm.mentee_id = ?
-            ''', (user_id,))
+                ORDER BY g.created_at DESC
+            ''', (mentee_id,))
+
             rows = cursor.fetchall()
             matches = []
             for row in rows:
@@ -924,13 +957,128 @@ class Database:
                     "program_type": row[3],
                     "max_size": row[4],
                     "experience_level": row[5],
-                    "mentor_name": row[6],
-                    "field_of_expertise": row[7],
-                    "mentor_university": row[8]
+                    "status": row[6],
+                    "mentor_name": row[7],
+                    "field_of_expertise": row[8],
+                    "mentor_university": row[9],
+                    "has_feedback": bool(row[10])
                 })
             return matches
         except sqlite3.Error as e:
             print(f"Error fetching previous matches: {e}")
             return []
+        finally:
+            conn.close()
+
+    def get_student_group_details(self, mentee_id, group_id):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                SELECT g.group_id,
+                       g.mentor_id,
+                       g.name,
+                       g.description,
+                       g.program_type,
+                       g.max_size,
+                       g.experience_level,
+                       g.status,
+                       u.name AS mentor_name,
+                       mp.field_of_expertise,
+                       mp.university AS mentor_university,
+                       EXISTS(
+                           SELECT 1
+                           FROM Feedback f
+                           WHERE f.group_id = g.group_id AND f.mentee_id = mm.mentee_id
+                       ) AS has_feedback
+                FROM Matching_mentee mm
+                JOIN Matching g ON mm.group_id = g.group_id
+                LEFT JOIN Mentor_profile mp ON g.mentor_id = mp.mentor_id
+                LEFT JOIN User u ON mp.user_id = u.user_id
+                WHERE mm.mentee_id = ? AND g.group_id = ?
+            ''', (mentee_id, group_id))
+            row = cursor.fetchone()
+            if not row:
+                return None
+
+            return {
+                "group_id": row[0],
+                "mentor_id": row[1],
+                "name": row[2],
+                "description": row[3],
+                "program_type": row[4],
+                "max_size": row[5],
+                "experience_level": row[6],
+                "status": row[7],
+                "mentor_name": row[8],
+                "field_of_expertise": row[9],
+                "mentor_university": row[10],
+                "has_feedback": bool(row[11])
+            }
+        except sqlite3.Error as e:
+            print(f"Error fetching student group details: {e}")
+            return None
+        finally:
+            conn.close()
+
+    def submit_feedback(self, group_id, mentor_id, mentee_id, compatibility, responsiveness, relationship_quality, rating_overall, comments):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                SELECT 1
+                FROM Feedback
+                WHERE group_id = ? AND mentee_id = ?
+            ''', (group_id, mentee_id))
+            if cursor.fetchone():
+                return False, "Feedback has already been submitted for this group"
+
+            cursor.execute('''
+                INSERT INTO Feedback (
+                    group_id,
+                    mentor_id,
+                    mentee_id,
+                    compatibility,
+                    responsiveness,
+                    relationship_quality,
+                    rating_overall,
+                    comments
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                group_id,
+                mentor_id,
+                mentee_id,
+                compatibility,
+                responsiveness,
+                relationship_quality,
+                rating_overall,
+                comments,
+            ))
+            conn.commit()
+            return True, "Feedback submitted successfully"
+        except sqlite3.Error as e:
+            print(f"Error submitting feedback: {e}")
+            conn.rollback()
+            return False, "Error submitting feedback"
+        finally:
+            conn.close()
+    
+    def change_matching_status(self, group_id, new_status):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                UPDATE Matching
+                SET status = ?
+                WHERE group_id = ?
+            ''', (new_status, group_id))
+            conn.commit()
+            print(f"Matching status for group_id {group_id} changed to {new_status}")
+            return True, "Matching status updated successfully"
+        except sqlite3.Error as e:
+            print(f"Error updating matching status: {e}")
+            conn.rollback()
+            return False, "Error updating matching status"
         finally:
             conn.close()
