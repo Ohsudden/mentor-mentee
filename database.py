@@ -7,6 +7,12 @@ class Database:
     def __init__(self, db_name='mentor_mentee.db'):
         self.db_name = db_name
         self.db_path = 'E:\mentor-mentee\mentor_mentee.db'
+
+    def _add_column_if_missing(self, cursor, table_name, column_name, column_definition):
+        cursor.execute(f"PRAGMA table_info({table_name})")
+        existing_columns = {row[1] for row in cursor.fetchall()}
+        if column_name not in existing_columns:
+            cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_definition}")
     
     def connect(self):
         conn = sqlite3.connect(self.db_path)
@@ -63,6 +69,7 @@ class Database:
                     long_term_goals VARCHAR,
                     mentor_expectations VARCHAR,
                     university VARCHAR,
+                    status TEXT NOT NULL DEFAULT 'unmatched' CHECK(status IN ('matched', 'unmatched')),
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE
                 )
@@ -107,6 +114,7 @@ class Database:
                     program_type TEXT,
                     max_size INTEGER,
                     experience_level VARCHAR,
+                    status TEXT NOT NULL DEFAULT 'To be assigned' CHECK(status IN ('To be assigned', 'in progress', 'finished')),
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
                 FOREIGN KEY (curator_id)
@@ -129,6 +137,22 @@ class Database:
                     FOREIGN KEY (group_id) REFERENCES Matching(group_id) ON DELETE CASCADE
                 )
             ''')
+
+            self._add_column_if_missing(
+                cursor,
+                "Mentee_profile",
+                "status",
+                "status TEXT NOT NULL DEFAULT 'unmatched' CHECK(status IN ('matched', 'unmatched'))"
+            )
+            self._add_column_if_missing(
+                cursor,
+                "Matching",
+                "status",
+                "status TEXT NOT NULL DEFAULT 'To be assigned' CHECK(status IN ('To be assigned', 'in progress', 'finished'))"
+            )
+
+            cursor.execute("UPDATE Mentee_profile SET status = 'unmatched' WHERE status IS NULL OR status = ''")
+            cursor.execute("UPDATE Matching SET status = 'To be assigned' WHERE status IS NULL OR status = ''")
             
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS Matching_algorithm_score (
@@ -356,8 +380,8 @@ class Database:
         cursor = conn.cursor()
         try:
             cursor.execute('''
-                INSERT INTO Matching (mentor_id, name, description, program_type, max_size, experience_level)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO Matching (mentor_id, name, description, program_type, max_size, experience_level, status)
+                VALUES (?, ?, ?, ?, ?, ?, 'To be assigned')
             ''', (mentor_id, name, description, program_type, max_size, experience_level))
             conn.commit()
             return True, "Matching created successfully"
@@ -369,21 +393,7 @@ class Database:
             conn.close()
 
     def assign_mentor_to_matching(self, mentee_id, group_id):
-        conn = self.connect()
-        cursor = conn.cursor()
-        try:
-            cursor.execute('''
-                INSERT INTO Matching_mentee (mentee_id, group_id)
-                VALUES (?, ?)
-            ''', (mentee_id, group_id))
-            conn.commit()
-            return True, "Mentor assigned to matching successfully"
-        except sqlite3.Error as e:
-            print(f"Error assigning mentor to matching: {e}")
-            conn.rollback()
-            return False, "Error assigning mentor to matching"
-        finally:
-            conn.close()
+        return self.add_mentee_to_group(group_id, mentee_id)
 
     def change_availability(self, user_id, day_of_the_week, start_time, end_time, timezone):
         conn = self.connect()
@@ -466,9 +476,36 @@ class Database:
         cursor = conn.cursor()
         try:
             cursor.execute('''
+                SELECT status
+                FROM Mentee_profile
+                WHERE mentee_id = ?
+            ''', (mentee_id,))
+            mentee = cursor.fetchone()
+            if mentee is None:
+                return False, "Mentee not found"
+            if mentee["status"] == "matched":
+                return False, "Mentee is already matched"
+
+            cursor.execute('''
                 INSERT INTO Matching_mentee (mentee_id, group_id)
                 VALUES (?, ?)
             ''', (mentee_id, group_id))
+
+            cursor.execute('''
+                UPDATE Mentee_profile
+                SET status = 'matched'
+                WHERE mentee_id = ?
+            ''', (mentee_id,))
+
+            cursor.execute('''
+                UPDATE Matching
+                SET status = CASE
+                    WHEN (SELECT COUNT(*) FROM Matching_mentee WHERE group_id = ?) >= max_size THEN 'finished'
+                    ELSE 'in progress'
+                END
+                WHERE group_id = ?
+            ''', (group_id, group_id))
+
             conn.commit()
             return True, "Mentee assigned to matching successfully"
         except sqlite3.Error as e:
@@ -493,8 +530,8 @@ class Database:
             cursor.execute("""
                 INSERT INTO Matching
                 (curator_id, mentor_id, name, description,
-                program_type, max_size, experience_level)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                program_type, max_size, experience_level, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 'To be assigned')
             """, (
                 curator_id,
                 mentor_id,
@@ -566,9 +603,31 @@ class Database:
         cursor = conn.cursor()
         try:
             cursor.execute('''
-                SELECT group_id, name, description, program_type, max_size, experience_level
-                FROM Matching
-                WHERE curator_id = ?
+                SELECT
+                    g.group_id,
+                    g.name,
+                    g.description,
+                    g.program_type,
+                    g.max_size,
+                    g.experience_level,
+                    u.name AS mentor_name,
+                    COUNT(DISTINCT mm.mentee_id) AS current_size
+                FROM Matching g
+                LEFT JOIN Mentor_profile mp
+                    ON g.mentor_id = mp.mentor_id
+                LEFT JOIN User u
+                    ON mp.user_id = u.user_id
+                LEFT JOIN Matching_mentee mm
+                    ON g.group_id = mm.group_id
+                WHERE g.curator_id = ?
+                GROUP BY
+                    g.group_id,
+                    g.name,
+                    g.description,
+                    g.program_type,
+                    g.max_size,
+                    g.experience_level,
+                    u.name
             ''', (curator_id,))
             rows = cursor.fetchall()
             groups = []
@@ -579,7 +638,9 @@ class Database:
                     "description": row[2],
                     "program_type": row[3],
                     "max_size": row[4],
-                    "experience_level": row[5]
+                    "experience_level": row[5],
+                    "mentor_name": row[6],
+                    "current_size": row[7]
                 })
             return groups
         except sqlite3.Error as e:
@@ -592,6 +653,16 @@ class Database:
         conn = self.connect()
         cursor = conn.cursor()
         try:
+            cursor.execute('''
+                UPDATE Mentee_profile
+                SET status = 'unmatched'
+                WHERE mentee_id IN (
+                    SELECT mentee_id
+                    FROM Matching_mentee
+                    WHERE group_id = ?
+                )
+            ''', (group_id,))
+
             cursor.execute('DELETE FROM Matching WHERE group_id = ?', (group_id,))
             conn.commit()
 
@@ -620,5 +691,246 @@ class Database:
             print(f"Error updating group: {e}")
             conn.rollback()
             return False, "Error updating group"
+        finally:
+            conn.close()
+
+    def add_mentee_to_group(self, group_id, mentee_id):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                SELECT status
+                FROM Mentee_profile
+                WHERE mentee_id = ?
+            ''', (mentee_id,))
+            mentee = cursor.fetchone()
+
+            if mentee is None:
+                return False, "Mentee not found"
+
+            if mentee["status"] == "matched":
+                return False, "Mentee is already matched"
+
+            cursor.execute('''
+                SELECT status, max_size
+                FROM Matching
+                WHERE group_id = ?
+            ''', (group_id,))
+            group = cursor.fetchone()
+
+            if group is None:
+                return False, "Group not found"
+
+            if group["status"] == "finished":
+                return False, "Group is already finished"
+
+            cursor.execute('''
+                SELECT COUNT(*) AS current_size
+                FROM Matching_mentee
+                WHERE group_id = ?
+            ''', (group_id,))
+            current_size = cursor.fetchone()["current_size"]
+
+            if current_size >= group["max_size"]:
+                cursor.execute('''
+                    UPDATE Matching
+                    SET status = 'finished'
+                    WHERE group_id = ?
+                ''', (group_id,))
+                conn.commit()
+                return False, "Group is already full"
+
+            cursor.execute('''
+                INSERT INTO Matching_mentee (group_id, mentee_id)
+                VALUES (?, ?)
+            ''', (group_id, mentee_id))
+
+            cursor.execute('''
+                UPDATE Mentee_profile
+                SET status = 'matched'
+                WHERE mentee_id = ?
+            ''', (mentee_id,))
+
+            next_size = current_size + 1
+            group_status = 'finished' if next_size >= group["max_size"] else 'in progress'
+
+            cursor.execute('''
+                UPDATE Matching
+                SET status = ?
+                WHERE group_id = ?
+            ''', (group_status, group_id))
+
+            conn.commit()
+            return True, "Mentee added to group successfully"
+        except sqlite3.Error as e:
+            print(f"Error adding mentee to group: {e}")
+            conn.rollback()
+            return False, "Error adding mentee to group"
+        finally:
+            conn.close()
+
+    def get_groups(self):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                SELECT group_id, curator_id, mentor_id, name, description, program_type, max_size, experience_level
+                FROM Matching
+            ''')
+            rows = cursor.fetchall()
+            groups = []
+            for row in rows:
+                groups.append({
+                    "group_id": row[0],
+                    "curator_id": row[1],
+                    "mentor_id": row[2],
+                    "name": row[3],
+                    "description": row[4],
+                    "program_type": row[5],
+                    "max_size": row[6],
+                    "experience_level": row[7]
+                })
+            return groups
+        except sqlite3.Error as e:
+            print(f"Error fetching groups: {e}")
+            return []
+        finally:
+            conn.close()
+
+    def get_mentees_in_group(self):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                SELECT m.mentee_id, u.name, u.email, m.skills, m.domain_of_study, m.favourable_program_type,
+                       m.experience_level, m.experience_text, m.research_goals, m.short_term_goals,
+                       m.long_term_goals, m.mentor_expectations, m.university
+                FROM Matching_mentee mm
+                JOIN Mentee_profile m ON mm.mentee_id = m.mentee_id
+                JOIN User u ON m.user_id = u.user_id
+            ''', )
+            rows = cursor.fetchall()
+            mentees = []
+            for row in rows:
+                mentees.append({
+                    "mentee_id": row[0],
+                    "name": row[1],
+                    "email": row[2],
+                    "skills": row[3],
+                    "domain_of_study": row[4],
+                    "favourable_program_type": row[5],
+                    "experience_level": row[6],
+                    "experience_text": row[7],
+                    "research_goals": row[8],
+                    "short_term_goals": row[9],
+                    "long_term_goals": row[10],
+                    "mentor_expectations": row[11],
+                    "university": row[12]
+                })
+            return mentees
+        except sqlite3.Error as e:
+            print(f"Error fetching mentees in group: {e}")
+            return []
+        finally:
+            conn.close()
+
+    def get_matched_groups(self):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                SELECT DISTINCT
+                    mt.group_id,
+                    g.name,
+                    g.description,
+                    g.program_type,
+                    g.max_size,
+                    g.experience_level,
+                    u.name AS mentor_name,
+                    mp.field_of_expertise,
+                    mp.university AS mentor_university
+                FROM Matching_mentee mt
+                JOIN Matching g
+                    ON mt.group_id = g.group_id
+                LEFT JOIN Mentor_profile mp
+                    ON g.mentor_id = mp.mentor_id
+                LEFT JOIN User u
+                    ON mp.user_id = u.user_id
+            ''')
+
+            rows = cursor.fetchall()
+            groups = []
+            for row in rows:
+                groups.append({
+                    "group_id": row[0],
+                    "name": row[1],
+                    "description": row[2],
+                    "program_type": row[3],
+                    "max_size": row[4],
+                    "experience_level": row[5],
+                    "mentor_name": row[6],
+                    "field_of_expertise": row[7],
+                    "mentor_university": row[8]
+                })
+
+            return groups
+
+        except sqlite3.Error as e:
+            print(f"Error fetching matched groups: {e}")
+            return []
+
+        finally:
+            conn.close()
+
+
+    def get_curator_id(self, user_id):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                SELECT curator_id FROM Curator_profile WHERE user_id = ?
+            ''', (user_id,))
+            row = cursor.fetchone()
+            if row:
+                return row[0]
+            else:
+                return None
+        except sqlite3.Error as e:
+            print(f"Error fetching curator ID: {e}")
+            return None
+        finally:
+            conn.close()
+
+    def get_previous_matches(self, user_id):
+        conn = self.connect()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                SELECT g.group_id, g.name, g.description, g.program_type, g.max_size, g.experience_level,
+                       u.name AS mentor_name, mp.field_of_expertise, mp.university AS mentor_university
+                FROM Matching_mentee mm
+                JOIN Matching g ON mm.group_id = g.group_id
+                LEFT JOIN Mentor_profile mp ON g.mentor_id = mp.mentor_id
+                LEFT JOIN User u ON mp.user_id = u.user_id
+                WHERE mm.mentee_id = ?
+            ''', (user_id,))
+            rows = cursor.fetchall()
+            matches = []
+            for row in rows:
+                matches.append({
+                    "group_id": row[0],
+                    "name": row[1],
+                    "description": row[2],
+                    "program_type": row[3],
+                    "max_size": row[4],
+                    "experience_level": row[5],
+                    "mentor_name": row[6],
+                    "field_of_expertise": row[7],
+                    "mentor_university": row[8]
+                })
+            return matches
+        except sqlite3.Error as e:
+            print(f"Error fetching previous matches: {e}")
+            return []
         finally:
             conn.close()

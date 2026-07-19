@@ -12,6 +12,8 @@ import sqlite_vec
 from database import Database
 
 class LLMIntegration:
+    MIN_COSINE_SIMILARITY = 0.285
+
     def __init__(self, openai_api_key=None):
         self.client = OpenAI(api_key=openai_api_key or os.getenv("OPENAI_API_KEY"))
 
@@ -182,7 +184,15 @@ class LLMIntegration:
             limit=n_matches
         )
 
+        for i in final:
+            success, message = db.add_mentee_to_group(group_id, i)
+            if not success:
+                print(f"Skipping mentee {i}: {message}")
         return final
+
+    def provide_matching_recommendations(self, db, group_id, n_matches=3):
+        return self.provide_recommendations(n_matches, db, group_id)
+
 
 
     def questionnaire_distance(self, a, b):
@@ -320,7 +330,8 @@ class LLMIntegration:
             SELECT
                 mentee_id,
                 user_id,
-                experience_level
+                experience_level,
+                status
             FROM Mentee_profile
         """)
 
@@ -331,6 +342,9 @@ class LLMIntegration:
         for mentee in mentees:
 
             if mentee["experience_level"] != required_level:
+                continue
+
+            if mentee["status"] != "unmatched":
                 continue
 
             cursor.execute("""
@@ -419,18 +433,25 @@ class LLMIntegration:
             cursor = conn.cursor()
 
         query = f"""
+            WITH scored_candidates AS (
+                SELECT
+                    mentee_id,
+                    1.0 - vec_distance_cosine(domain_of_study_emb, ?) AS cosine_similarity
+                FROM Mentee_embeddings
+                WHERE mentee_id IN ({placeholders})
+            )
             SELECT
                 mentee_id,
-                vec_distance_cosine(domain_of_study_emb, ?) AS distance
-            FROM Mentee_embeddings
-            WHERE mentee_id IN ({placeholders})
-            ORDER BY distance
+                cosine_similarity
+            FROM scored_candidates
+            WHERE cosine_similarity >= ?
+            ORDER BY cosine_similarity DESC
             LIMIT ?
         """
 
         cursor.execute(
             query,
-            (group_embedding, *candidate_ids, limit)
+            (group_embedding, *candidate_ids, self.MIN_COSINE_SIMILARITY, limit)
         )
 
         rows = cursor.fetchall()

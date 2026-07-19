@@ -88,7 +88,7 @@
     <nav class="sidebar-nav">
       <ul class="sidebar-menu">
         <li class="sidebar-item">
-          <a href="#" class="sidebar-link">
+          <a href="#" class="sidebar-link active">
             <img src="/static/img/calendar.png" alt="Results" class="sidebar-icon" />
             <span>Results of matchmaking</span>
           </a>
@@ -110,9 +110,9 @@
         
         <li class="sidebar-item">
             {% if user.role == "curator" %}
-      <a href="/current_groups" class="sidebar-link active">
+      <a href="/current_groups" class="sidebar-link">
                   <img src="/static/img/questionnaire.png" alt="Questionnaire" class="sidebar-icon" />
-                  <span>My current groups</span>
+                  <span>Current groups</span>
                 </a>
             {% else %}
           <a href="/questionnaire" class="sidebar-link">
@@ -138,7 +138,7 @@
 
   <main class="main-content">
     <div class="settings-container">
-      <h1>My Current Groups</h1>
+      <h1>Current Groups</h1>
       <p>View and manage the mentoring groups you are currently overseeing.</p>
 
       <div id="groups-list" class="groups-list">
@@ -190,159 +190,36 @@
 </footer>
 
 <script>
-function get_current_groups() {
-  fetch('/api/current_groups')
+function assigned_groups() {
+  fetch("/api/current_matching_groups")
     .then(response => response.json())
     .then(data => {
-      const groupsList = document.getElementById('groups-list');
-      groupsList.innerHTML = '';
-
+      const groupsList = document.getElementById("groups-list");
+      groupsList.innerHTML = ""; 
       if (data.groups.length === 0) {
-        groupsList.innerHTML = '<p>You are not currently overseeing any groups.</p>';
+        groupsList.innerHTML = "<p>No assigned groups found.</p>";
         return;
       }
 
-data.groups.forEach(group => {
-  const groupItem = document.createElement('div'); // ✅ FIX
-  const mentorName = group.mentor_name || 'Not assigned';
-  const currentSize = group.current_size ?? 0;
-  groupItem.innerHTML = `
-    <div class="group-card">
-      <div class="group-header">
-        <h3>${group.name}</h3>
-      </div>
+      data.groups.forEach(group => {
+        const groupCard = document.createElement("div");
+        groupCard.className = "group-card";
 
-      <div class="group-body">
-        <p>${group.description}</p>
-        <p><strong>Mentor:</strong> ${mentorName}</p>
-        <p><strong>Program Type:</strong> ${group.program_type}</p>
-        <p><strong>Experience Level:</strong> ${group.experience_level}</p>
-        <p><strong>Current Size:</strong> ${currentSize}/${group.max_size}</p>
-      </div>
+        groupCard.innerHTML = `
+          <div class="group-header">
+            <h3>${group.name}</h3>
+          </div>
+          <div class="group-body">
+            <p><strong>Mentor:</strong> ${group.mentor_name}</p>
+          </div>
+        `;
 
-      <div class="group-actions">
-        <button class="btn-edit"
-  onclick="openEditGroup(${group.group_id}, '${group.name}', '${group.description}', '${group.program_type}', ${group.max_size}, '${group.experience_level}')"> Edit </button>
-<button class="btn-delete" onclick="deleteGroup(${group.group_id})">
-          Delete
-        </button>
-        <button class="btn-conduct" onclick="runMatching(${group.group_id}, ${group.max_size})">
-          Run matching
-          </button>
-      </div>
-    </div>
-  `;
-
-  groupsList.appendChild(groupItem);
-});
-    })
-    .catch(error => {
-      console.error('Error fetching current groups:', error);
-      const groupsList = document.getElementById('groups-list');
-      groupsList.innerHTML = '<p>Error loading current groups. Please try again later.</p>';
+        groupsList.appendChild(groupCard);
+      });
     });
+
 }
-document.addEventListener('DOMContentLoaded', get_current_groups);
-function runMatching(groupId, maxSize) {
-  if (!groupId) {
-    alert("Invalid group id");
-    return;
-  }
-
-  fetch('/api/run_matching', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ group_id: groupId, max_size: maxSize })
-  })
-  .then(async res => {
-    const text = await res.text(); 
-
-    try {
-      const data = JSON.parse(text);
-      alert(data.message);
-    } catch (e) {
-      console.error("Non-JSON response:", text);
-      alert("Server error: check backend logs");
-    }
-
-    get_current_groups();
-  })
-  .catch(err => {
-    console.error(err);
-    alert("Request failed");
-  });
-}
-
-
-function deleteGroup(groupId) {
-  if (!groupId) {
-    alert("Invalid group id");
-    return;
-  }
-
-  if (!confirm("Are you sure you want to delete this group?")) return;
-
-  fetch('/api/remove_group', {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ group_id: groupId })
-  })
-  .then(async res => {
-    const text = await res.text(); 
-
-    try {
-      const data = JSON.parse(text);
-      alert(data.message);
-    } catch (e) {
-      console.error("Non-JSON response:", text);
-      alert("Server error: check backend logs");
-    }
-
-    get_current_groups();
-  })
-  .catch(err => {
-    console.error(err);
-    alert("Request failed");
-  });
-}
-
-function openEditGroup(id, name, description, program_type, max_size, experience_level) {
-  const newName = prompt("Group name:", name);
-  const newDesc = prompt("Description:", description);
-  const newProgram = prompt("Program type:", program_type);
-  const newMaxSize = prompt("Max size:", max_size);
-  const newLevel = prompt("Experience level:", experience_level);
-
-  if (!newName) return;
-
-  fetch('/api/change_group', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      group_id: id,
-      name: newName,
-      description: newDesc,
-      program_type: newProgram,
-      max_size: parseInt(newMaxSize),
-      experience_level: newLevel
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    alert(data.message);
-    get_current_groups();
-  })
-  .catch(err => {
-    console.error(err);
-    alert("Failed to update group");
-  });
-}
+window.onload = assigned_groups;
 </script>
 
 </body>

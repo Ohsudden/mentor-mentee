@@ -26,7 +26,7 @@
     <nav class="sidebar-nav">
       <ul class="sidebar-menu">
         <li class="sidebar-item">
-          <a href="#" class="sidebar-link">
+          <a href="/results_of_matching" class="sidebar-link">
             <img src="/static/img/calendar.png" alt="Results" class="sidebar-icon" />
             <span>Results of matchmaking</span>
           </a>
@@ -133,15 +133,7 @@
   </div>
 </div>
 
-{% elif user and user.role == 'mentee' %}
 
-<div class="profile-section">
-        placeholder="Number of mentee groups"
-        value="{{ user.max_groups if user else '' }}"
-      />
-    </div>
-  </div>
-</div>
 
 {% elif user and user.role == 'mentee' %}
 
@@ -185,18 +177,16 @@
     </div>
   </div>
 
-  <div class="form-row">
-    <div class="form-group">
-      <label for="experience_level">Experience Level</label>
-      <select id="experience_level" name="experience_level">
-        <option value="">Select experience level</option>
-        <option value="Beginner" {% if user and user.experience_level == 'Beginner' %}selected{% endif %}>Beginner</option>
-        <option value="Intermediate" {% if user and user.experience_level == 'Intermediate' %}selected{% endif %}>Intermediate</option>
-        <option value="Advanced" {% if user and user.experience_level == 'Advanced' %}selected{% endif %}>Advanced</option>
-      </select>
-    </div>
+<div class="form-row">
+  <div class="form-group">
+    <label for="experience">Experience</label>
+    <textarea
+      id="experience"
+      name="experience"
+      placeholder="Describe your research, academic, or professional experience (e.g., Conducted research at..., Published..., Worked as..., Completed...)"
+    >{{ user.experience if user else '' }}</textarea>
   </div>
-
+</div>
   <div class="form-row">
     <div class="form-group">
       <label for="research_goals">Research Goals</label>
@@ -351,14 +341,14 @@ function send_mentee_profile() {
   const profileData = {
     skills: document.getElementById('skills').value,
     domain_of_knowledge: document.getElementById('domain_of_knowledge').value,
-    favourable_program_type: document.getElementById('favourable_program_type').value,
-    experience_level: document.getElementById('experience_level').value,
+    favourable_program_type: document.getElementById('favourable_program_type').value,  
+    experience: document.getElementById('experience').value,
     university: document.getElementById('university').value,
     research_goals: document.getElementById('research_goals').value,
     short_term_goals: document.getElementById('short_term_goals').value,
     long_term_goals: document.getElementById('long_term_goals').value,
     mentor_expectations: document.getElementById('mentor_expectations').value
-  };
+  }
   return fetch('/api/profile', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

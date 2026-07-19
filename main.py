@@ -12,7 +12,9 @@ from dotenv import load_dotenv
 from phoenix.client import Client
 from database import Database
 from llm_integration import LLMIntegration
+from dotenv import load_dotenv
 
+load_dotenv()
 llm = LLMIntegration()
 
 class RegisterRequest(BaseModel):
@@ -207,7 +209,7 @@ async def update_profile(request: Request):
         db.fill_curator_profile(
             user_id,
             body.get("department"),
-            body.get("university")
+            body.get("organization")
         )
     elif request.session.get("user_role") == "mentee":
         prompt = f"""
@@ -223,7 +225,7 @@ async def update_profile(request: Request):
         4. Return only a valid JSON object matching the schema below.
 
         ## Experience
-        {body.get("experience_text")}
+        {body.get("experience")}
 
         ## Output schema
         {{
@@ -245,8 +247,8 @@ async def update_profile(request: Request):
         Take time to analyze the experience before deciding the level.
         Ensure the output is valid JSON and contains no additional text.
         """
-        experience_text = llm.get_working_experience(prompt)
-        db.fill_mentee_profile(user_id, body.get("skills"), body.get("domain_of_knowledge"), body.get("favourable_program_type"), experience_text, body.get("experience_level"), body.get("research_goals"), body.get("short_term_goals"), body.get("long_term_goals"), body.get("mentor_expectations"), body.get("university"))
+        experience_level = llm.get_working_experience(prompt)
+        db.fill_mentee_profile(user_id, body.get("skills"), body.get("domain_of_knowledge"), body.get("favourable_program_type"), body.get("experience"), experience_level, body.get("research_goals"), body.get("short_term_goals"), body.get("long_term_goals"), body.get("mentor_expectations"), body.get("university"))
 
 @app.get("/login", response_class=HTMLResponse)
 async def login(request: Request):
@@ -304,11 +306,20 @@ def matching_formation(request: Request):
     
     user_data = db.get_user_by_id(user_id)
     role = user_data.get("role")
-    
+    curator_id = db.get_curator_id(user_id)
+    if not curator_id:
+        return RedirectResponse(url="/profile", status_code=303)
+
     if role == "curator":
-        return templates.TemplateResponse(request, "group_formation.html", context={"user": user_data})
-    elif role == "mentee" or role == "mentee":
+        return templates.TemplateResponse(
+            request,
+            "group_formation.html",
+            context={"user": user_data, "curator_id": curator_id}
+        )
+    elif role == "mentee":
         return RedirectResponse(url=f"/profile", status_code=303)
+    
+    return RedirectResponse(url="/profile", status_code=303)
     
 @app.post("/api/matching_formation")
 async def api_group_formation(
@@ -427,3 +438,64 @@ async def change_group(request: Request):
     if not success:
         return JSONResponse(status_code=500, content={"message": msg})
     return {"message": "Group updated successfully"}
+
+
+@app.get("/api/current_matching_groups")
+async def get_current_matching_groups(request: Request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return JSONResponse(status_code=401, content={"message": "Unauthorized"})
+    groups = db.get_matched_groups()
+    return JSONResponse(status_code=200, content={"groups": groups})
+
+
+@app.get("/results_of_matching", response_class=HTMLResponse)
+def results_of_matching(request: Request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return RedirectResponse(url="/login", status_code=303)
+    
+    user_data = db.get_user_by_id(user_id)
+    return templates.TemplateResponse(request, "current_matched_groups.html", {"user": user_data})
+
+@app.post("/api/run_matching")
+async def run_matching(request: Request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return JSONResponse(status_code=401, content={"message": "Unauthorized"})
+
+    curator_data = db.get_current_curator(user_id)
+    if not curator_data:
+        return JSONResponse(status_code=403, content={"message": "User is not a curator"})
+    
+    try:
+        body = await request.json()
+        n_matches = body.get("n_matches", 3)
+        group_id = body.get("group_id")
+        if not group_id:
+            return JSONResponse(status_code=400, content={"message": "group_id missing"})
+        group_id = int(group_id)
+        recommendations = llm.provide_matching_recommendations(db, group_id, n_matches)
+        return JSONResponse(
+            status_code=200,
+            content={
+                "message": "Matching process completed successfully",
+                "recommendations": recommendations,
+            }
+        )
+    except Exception as e:
+        print(f"[ERROR] Matching process failed: {e}")
+        return JSONResponse(status_code=500, content={"message": "Matching process failed", "error": str(e)})
+    
+@app.get("/previous_matches")
+async def previous_matches(request: Request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return JSONResponse(status_code=401, content={"message": "Unauthorized"})
+
+    try:
+        matches = db.get_previous_matches(user_id)
+        return templates.TemplateResponse(request, "current_matched_groups.html", {"matches": matches})
+    except Exception as e:
+        print(f"[ERROR] fetching previous matches failed: {e}")
+        return JSONResponse(status_code=500, content={"message": "Internal server error"})
