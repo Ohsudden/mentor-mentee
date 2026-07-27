@@ -140,3 +140,6 @@ mentor-mentee/
 ├── test_feedback.py      # Mentee feedback submission tests
 └── test_functions.py     # General platform unit tests
 ```
+## Additional resources: 
+1. Mitacs_GRI_Mentor_mentee_matching_tool.pdf is a scientific-based documentation for the developed tool.
+2. Any additional illustration can be found at: https://www.figma.com/design/MDmUmG9rIRZAeqZeiK4BuE/Mitacs-GRI?node-id=0-1&t=wZu6yr4t6dW4wBNZ-1
